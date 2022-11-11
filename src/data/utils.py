@@ -5,7 +5,9 @@ import json
 BASE_URL = "https://myanimelist.net/animelist"
 
 
+# Scrape list of rated shows from user profile
 def scrape(user: str):
+    # Get the raw content
     url = f"{BASE_URL}/{user}?status=2"
 
     out = requests.get(url)
@@ -14,6 +16,7 @@ def scrape(user: str):
     tag = soup.find("table", {"class": "list-table"})
     items = json.loads(tag["data-items"])
 
+    # Extract required traits from the html
     out = []
 
     for row in items:
@@ -27,8 +30,3 @@ def scrape(user: str):
         out.append(temp)
 
     return out
-
-
-if __name__ == "__main__":
-    data = scrape("Armaterasu")
-    print(data)
