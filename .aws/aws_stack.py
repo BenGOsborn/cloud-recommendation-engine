@@ -40,8 +40,8 @@ class CloudRecommendationStack(Stack):
         api_gateway = apigateway.RestApi(self, "api")
         api_gateway_sqs_integration = apigateway.AwsIntegration(
             service="sqs",
-            path=f"{os.getenv('CDK_DEFAULT_ACCOUNT')}/{sync_request_queue.queue_name}"
-            integration_http_method="POST"
+            path=f"{os.getenv('CDK_DEFAULT_ACCOUNT')}/{sync_request_queue.queue_name}",
+            integration_http_method="POST",
             options=apigateway.IntegrationOptions(
                 credentials_role=api_gateway_role,
                 request_parameters={
