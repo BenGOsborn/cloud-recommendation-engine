@@ -38,34 +38,34 @@ class CloudRecommendationStack(Stack):
         sync_request_queue.grant_send_messages(api_gateway_role)
 
         # API gateway SQS integration
-        api_gateway = apigateway.RestApi(self, "api")
+        api_gateway = apigateway.RestApi(self, "recommendationApi")
         api_gateway_sqs_integration = apigateway.AwsIntegration(
             service="sqs",
             path=f"{os.getenv('CDK_DEFAULT_ACCOUNT')}/{sync_request_queue.queue_name}",
             integration_http_method="POST",
             options=apigateway.IntegrationOptions(
                 credentials_role=api_gateway_role,
-                request_parameters={
-                    "integration.request.header.Content-Type": "application/x-www-form-urlencoded"
-                },
-                request_templates={
-                    "application/json": "Action=SendMessage&MessageBody=$input.body"
-                },
-                integration_responses=[
-                    {"statusCode": "200"},
-                    {"statusCode": "400"},
-                    {"statusCode": "500"}
-                ]
+                #     request_parameters={
+                #         "integration.request.header.Content-Type": "application/x-www-form-urlencoded"
+                #     },
+                #     request_templates={
+                #         "application/json": "Action=SendMessage&MessageBody=$input.body"
+                #     },
+                #     integration_responses=[
+                #         {"statusCode": "200"},
+                #         {"statusCode": "400"},
+                #         {"statusCode": "500"}
+                #     ]
             )
         )
         api_gateway.root.add_method(
             "POST",
             api_gateway_sqs_integration,
-            method_responses=[
-                {"statusCode": "200"},
-                {"statusCode": "400"},
-                {"statusCode": "500"}
-            ]
+            # method_responses=[
+            #     {"statusCode": "200"},
+            #     {"statusCode": "400"},
+            #     {"statusCode": "500"}
+            # ]
         )
 
         # ==== Recommendation engine ====
