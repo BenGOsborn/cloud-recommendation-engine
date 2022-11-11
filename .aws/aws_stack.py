@@ -61,11 +61,11 @@ class CloudRecommendationStack(Stack):
         api_gateway.root.add_method(
             "POST",
             api_gateway_sqs_integration,
-            # method_responses=[
-            #     {"statusCode": "200"},
-            #     {"statusCode": "400"},
-            #     {"statusCode": "500"}
-            # ]
+            method_responses=[
+                {"statusCode": "200"},
+                #     {"statusCode": "400"},
+                #     {"statusCode": "500"}
+            ]
         )
 
         # ==== Recommendation engine ====
