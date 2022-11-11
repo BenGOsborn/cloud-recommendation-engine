@@ -9,8 +9,16 @@ def scrape(user: str, page: int):
     out = requests.get(url)
     soup = BeautifulSoup(out.text, features="html.parser")
 
-    tag = soup.find_all("table")
-    print(tag[0])
+    tag = soup.find("table", {"class": "list-table"})
+    items = json.loads(tag["data-items"])
+
+    for row in items:
+        print(
+            row["anime_id"],
+            row["anime_title"],
+            row["anime_title_eng"],
+            row["score"], "\n"
+        )
 
 
 if __name__ == "__main__":
