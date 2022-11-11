@@ -6,7 +6,7 @@ BASE_URL = "https://myanimelist.net/animelist"
 
 
 def scrape(user: str):
-    url = f"{BASE_URL}/{user}"
+    url = f"{BASE_URL}/{user}?status=2"
 
     out = requests.get(url)
     soup = BeautifulSoup(out.text, features="html.parser")

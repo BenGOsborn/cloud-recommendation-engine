@@ -15,6 +15,14 @@ class AwsStack(Stack):
         # The code that defines your stack goes here
 
         # Data sync / scraper
+        ratings_table = dynamodb.Table(self,
+                                       id="ratingsTable",
+                                       table_name="ratingsTable",
+                                       partition_key=dynamodb.Attribute(
+                                           name="id",
+                                           type=dynamodb.AttributeType.STRING
+                                       )
+                                       )
 
         # Recommendation engine
 
