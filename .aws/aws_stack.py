@@ -18,20 +18,21 @@ class CloudRecommendationStack(Stack):
         # ==== Data sync / scraper ====
 
         # Store ratings
-        ratings_table = dynamodb.Table(self,
-                                       id="ratingsTable",
-                                       table_name="ratingsTable",
-                                       partition_key=dynamodb.Attribute(
-                                           name="id",
-                                           type=dynamodb.AttributeType.STRING
-                                       )
-                                       )
+        ratings_table = dynamodb.Table(
+            self,
+            id="ratingsTable",
+            table_name="ratingsTable",
+            partition_key=dynamodb.Attribute(
+                name="id",
+                type=dynamodb.AttributeType.STRING
+            )
+        )
 
         # Integrate sqs directly with API gateway
         sync_request_queue = sqs.Queue(self, "syncRequestQueue")
         api_gateway_role = iam.Role(
             self,
-            "syncRequestQueueAPIGateway",
+            id="syncRequestQueueAPIGateway",
             assumed_by=iam.ServicePrincipal("apigateway.amazonaws.com")
         )
         sync_request_queue.grant_send_messages(api_gateway_role)
