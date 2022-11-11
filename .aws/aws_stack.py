@@ -1,10 +1,11 @@
 from aws_cdk import (
     # Duration,
     Stack,
-    aws_dynamodb as dynamodb,
-    aws_sqs as sqs,
-    aws_apigateway as apigateway,
-    aws_iam as iam,
+    aws_dynamodb as dynamodb_,
+    aws_sqs as sqs_,
+    aws_apigateway as apigateway_,
+    aws_iam as iam_,
+    aws_lambda as lambda_,
 )
 from constructs import Construct
 import os
@@ -18,32 +19,32 @@ class CloudRecommendationStack(Stack):
         # ==== Data sync / scraper ====
 
         # Store ratings
-        ratings_table = dynamodb.Table(
+        ratings_table = dynamodb_.Table(
             self,
             id="ratingsTable",
             table_name="ratingsTable",
-            partition_key=dynamodb.Attribute(
-                name="id",
-                type=dynamodb.AttributeType.STRING
+            partition_key=dynamodb_.Attribute(
+                name="user",
+                type=dynamodb_.AttributeType.STRING
             )
         )
 
         # Integrate sqs directly with API gateway
-        sync_request_queue = sqs.Queue(self, "syncRequestQueue")
-        api_gateway_role = iam.Role(
+        sync_request_queue = sqs_.Queue(self, "syncRequestQueue")
+        api_gateway_role = iam_.Role(
             self,
             id="syncRequestQueueAPIGateway",
-            assumed_by=iam.ServicePrincipal("apigateway.amazonaws.com")
+            assumed_by=iam_.ServicePrincipal("apigateway.amazonaws.com")
         )
         sync_request_queue.grant_send_messages(api_gateway_role)
 
         # API gateway SQS integration
-        api_gateway = apigateway.RestApi(self, "recommendationApi")
-        api_gateway_sqs_integration = apigateway.AwsIntegration(
+        api_gateway = apigateway_.RestApi(self, "recommendationApi")
+        api_gateway_sqs_integration = apigateway_.AwsIntegration(
             service="sqs",
             path=f"{os.getenv('CDK_DEFAULT_ACCOUNT')}/{sync_request_queue.queue_name}",
             integration_http_method="POST",
-            options=apigateway.IntegrationOptions(
+            options=apigateway_.IntegrationOptions(
                 credentials_role=api_gateway_role,
                 request_parameters={
                     "integration.request.header.Content-Type": "'application/x-www-form-urlencoded'"
@@ -67,6 +68,16 @@ class CloudRecommendationStack(Stack):
                 {"statusCode": "500"}
             ]
         )
+
+        # Lambda scraper
+        scraper = lambda_.DockerImageFunction(
+            self,
+            "scraperFunction",
+            code=lambda_.DockerImageCode.from_image_asset(
+                os.path.join(os.getcwd(), "..", "src", "data", "Dockerfile")
+            )
+        )
+        ratings_table.grant_read_write_data(scraper)
 
         # ==== Recommendation engine ====
 
