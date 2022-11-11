@@ -24,7 +24,7 @@ class CloudRecommendationStack(Stack):
             id="ratingsTable",
             table_name="ratingsTable",
             partition_key=dynamodb_.Attribute(
-                name="user",
+                name="userId",
                 type=dynamodb_.AttributeType.STRING
             )
         )
@@ -74,7 +74,7 @@ class CloudRecommendationStack(Stack):
             self,
             "scraperFunction",
             code=lambda_.DockerImageCode.from_image_asset(
-                os.path.join(os.getcwd(), "..", "src", "data", "Dockerfile")
+                os.path.join(os.getcwd(), "..", "src", "data")
             )
         )
         ratings_table.grant_read_write_data(scraper)
