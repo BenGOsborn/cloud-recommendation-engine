@@ -22,6 +22,9 @@ def scrape(user: str):
     for row in items:
         temp = []
 
+        print(row)
+        print("\n")
+
         traits = ["anime_id", "anime_title", "anime_title_eng", "score"]
 
         for trait in traits:
@@ -30,3 +33,7 @@ def scrape(user: str):
         out.append(temp)
 
     return out
+
+
+if __name__ == "__main__":
+    scrape("Armaterasu")
