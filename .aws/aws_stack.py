@@ -1,6 +1,7 @@
 from aws_cdk import (
     # Duration,
     Stack,
+    aws_dynamodb as dynamodb,
     # aws_sqs as sqs,
 )
 from constructs import Construct
@@ -12,6 +13,14 @@ class AwsStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
 
         # The code that defines your stack goes here
+
+        # Data sync / scraper
+
+        # Recommendation engine
+
+        # Request recommendations
+
+        # Training
 
         # example resource
         # queue = sqs.Queue(

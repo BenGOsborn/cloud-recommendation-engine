@@ -2,9 +2,11 @@ import requests
 from bs4 import BeautifulSoup
 import json
 
+BASE_URL = "https://myanimelist.net/animelist"
 
-def scrape(user: str, page: int):
-    url = "https://myanimelist.net/animelist/Armaterasu"
+
+def scrape(user: str):
+    url = f"{BASE_URL}/{user}"
 
     out = requests.get(url)
     soup = BeautifulSoup(out.text, features="html.parser")
@@ -12,14 +14,21 @@ def scrape(user: str, page: int):
     tag = soup.find("table", {"class": "list-table"})
     items = json.loads(tag["data-items"])
 
+    out = []
+
     for row in items:
-        print(
-            row["anime_id"],
-            row["anime_title"],
-            row["anime_title_eng"],
-            row["score"], "\n"
-        )
+        temp = []
+
+        traits = ["anime_id", "anime_title", "anime_title_eng", "score"]
+
+        for trait in traits:
+            temp.append(row[trait] if trait in row else None)
+
+        out.append(temp)
+
+    return out
 
 
 if __name__ == "__main__":
-    scrape(None, None)
+    data = scrape("Armaterasu")
+    print(data)
