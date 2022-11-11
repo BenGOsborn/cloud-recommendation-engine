@@ -45,17 +45,17 @@ class CloudRecommendationStack(Stack):
             integration_http_method="POST",
             options=apigateway.IntegrationOptions(
                 credentials_role=api_gateway_role,
-                #     request_parameters={
-                #         "integration.request.header.Content-Type": "application/x-www-form-urlencoded"
-                #     },
-                #     request_templates={
-                #         "application/json": "Action=SendMessage&MessageBody=$input.body"
-                #     },
-                #     integration_responses=[
-                #         {"statusCode": "200"},
-                #         {"statusCode": "400"},
-                #         {"statusCode": "500"}
-                #     ]
+                request_parameters={
+                    "integration.request.header.Content-Type": "'application/x-www-form-urlencoded'"
+                },
+                request_templates={
+                    "application/json": "Action=SendMessage&MessageBody=$input.body"
+                },
+                integration_responses=[
+                    {"statusCode": "200"},
+                    {"statusCode": "400"},
+                    {"statusCode": "500"}
+                ]
             )
         )
         api_gateway.root.add_method(
@@ -63,8 +63,8 @@ class CloudRecommendationStack(Stack):
             api_gateway_sqs_integration,
             method_responses=[
                 {"statusCode": "200"},
-                #     {"statusCode": "400"},
-                #     {"statusCode": "500"}
+                {"statusCode": "400"},
+                {"statusCode": "500"}
             ]
         )
 
