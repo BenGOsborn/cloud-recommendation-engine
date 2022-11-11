@@ -32,7 +32,7 @@ class CloudRecommendationStack(Stack):
         api_gateway_role = iam.Role(
             self,
             "syncRequestQueueAPIGateway",
-            iam.ServicePrincipal("apigateway.amazonaws.com")
+            assumed_by=iam.ServicePrincipal("apigateway.amazonaws.com")
         )
         sync_request_queue.grant_send_messages(api_gateway_role)
 
