@@ -1,8 +1,22 @@
+from typing import Dict, List
 import requests
 from bs4 import BeautifulSoup
 import json
 
 BASE_URL = "https://myanimelist.net/animelist"
+
+
+# Extract the specified traits from the data
+def extract_traits(data: Dict[str, str], traits: List[str]):
+    out = {}
+
+    for trait in traits:
+        if trait in data:
+            out[trait] = str(data[trait])
+        else:
+            return None
+
+    return out
 
 
 # Scrape list of rated shows from user profile
@@ -19,20 +33,20 @@ def scrape(user: str):
     # Extract required traits from the html
     out = []
 
+    traits_to_extract = [
+        "anime_id",
+        "anime_title",
+        "anime_title_eng",
+        "score",
+        "created_at"
+    ]
+
     for row in items:
-        temp = {}
+        traits = extract_traits(row, traits_to_extract)
 
-        traits = [
-            "anime_id",
-            "anime_title",
-            "anime_title_eng",
-            "score",
-            "created_at"
-        ]
+        if traits is None:
+            continue
 
-        for trait in traits:
-            temp[trait] = str(row[trait]) if trait in row else None
-
-        out.append(temp)
+        out.append(traits)
 
     return out
