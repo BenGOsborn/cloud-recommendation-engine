@@ -10,8 +10,9 @@ def lambda_handler(event, context):
     client = boto3.resource("dynamodb")
 
     ratings_table = client.Table("ratingsTable")
-    users_table = client.Table("usersTable")
+    users_params_table = client.Table("usersParamsTable")
     shows_table = client.Table("showsTable")
+    shows_params_table = client.Table("showsParamsTable")
 
     for record in event["Records"]:
         body = json.loads(record["body"])
@@ -38,7 +39,7 @@ def lambda_handler(event, context):
         )
 
         # Insert into users if it doesnt exist
-        users_table.put_item(
+        users_params_table.put_item(
             Item={
                 "userId": user,
                 "weights": WEIGHTS,

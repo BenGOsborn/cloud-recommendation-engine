@@ -29,6 +29,15 @@ class CloudRecommendationStack(Stack):
                 type=dynamodb_.AttributeType.STRING
             )
         )
+        users_table = dynamodb_.Table(
+            self,
+            id="usersTable",
+            table_name="usersTable",
+            partition_key=dynamodb_.Attribute(
+                name="userId",
+                type=dynamodb_.AttributeType.STRING
+            )
+        )
         users_params_table = dynamodb_.Table(
             self,
             id="usersParamsTable",
@@ -112,7 +121,9 @@ class CloudRecommendationStack(Stack):
         )
         ratings_table.grant_read_write_data(scraper)
         users_table.grant_read_write_data(scraper)
+        users_params_table.grant_read_write_data(scraper)
         shows_table.grant_read_write_data(scraper)
+        shows_params_table.grant_read_write_data(scraper)
 
         # ==== Recommendation engine ====
 
