@@ -26,7 +26,7 @@ weights2 = torch.rand(n, x, requires_grad=True)
 biases1 = torch.rand(n, 1, requires_grad=True)
 biases2 = torch.rand(n, 1, requires_grad=True)
 
-target = torch.tensor([[1]] * n)
+target = torch.tensor([[1]] * n, dtype=torch.float32)
 
 print("Weights 1", weights1)
 print("Biases 1", biases1)
@@ -40,9 +40,12 @@ learning_rate = 0.007
 
 model = MatrixFactorization()
 loss = torch.nn.MSELoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+optimizer = torch.optim.Adam(
+    [weights1, biases1, weights2, biases2],
+    lr=learning_rate
+)
 
-epochs = 10
+epochs = 1000
 
 for epoch in range(epochs):
     prediction = model(weights1, biases1, weights2, biases2)
@@ -50,6 +53,9 @@ for epoch in range(epochs):
     l = loss(prediction, target)
 
     l.backward()
+
+    optimizer.step()
+    optimizer.zero_grad()
 
 
 prediction = model(weights1, biases1, weights2, biases2)
