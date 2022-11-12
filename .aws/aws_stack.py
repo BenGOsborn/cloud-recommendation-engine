@@ -25,7 +25,7 @@ class CloudRecommendationStack(Stack):
             id="ratingsTable",
             table_name="ratingsTable",
             partition_key=dynamodb_.Attribute(
-                name="userId",
+                name="id",
                 type=dynamodb_.AttributeType.STRING
             )
         )
