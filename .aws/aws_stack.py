@@ -29,12 +29,12 @@ class CloudRecommendationStack(Stack):
                 type=dynamodb_.AttributeType.STRING
             )
         )
-        users_table = dynamodb_.Table(
+        users_params_table = dynamodb_.Table(
             self,
-            id="usersTable",
-            table_name="usersTable",
+            id="usersParamsTable",
+            table_name="usersParamsTable",
             partition_key=dynamodb_.Attribute(
-                name="id",
+                name="userId",
                 type=dynamodb_.AttributeType.STRING
             )
         )
@@ -42,6 +42,15 @@ class CloudRecommendationStack(Stack):
             self,
             id="showsTable",
             table_name="showsTable",
+            partition_key=dynamodb_.Attribute(
+                name="showId",
+                type=dynamodb_.AttributeType.STRING
+            )
+        )
+        shows_params_table = dynamodb_.Table(
+            self,
+            id="showsParamsTable",
+            table_name="showsParamsTable",
             partition_key=dynamodb_.Attribute(
                 name="showId",
                 type=dynamodb_.AttributeType.STRING

@@ -2,8 +2,8 @@ import boto3
 import json
 import utils
 
-
-WEIGHT_SIZE = 12
+WEIGHTS = json.dumps([0] * 12)
+BIASES = json.dumps([0])
 
 
 def lambda_handler(event, context):
@@ -25,17 +25,14 @@ def lambda_handler(event, context):
 
         # **** Also need to initialize new weights here
 
-        weights = json.dumps([0] * WEIGHT_SIZE)
-        biases = json.dumps([0])
-
         # Insert into shows if it doesnt exist
         shows_table.put_item(
             Item={
                 "showId": data["anime_id"],
                 "animeTitle": data["anime_title"],
                 "animeTitleEng": data["anime_title_eng"],
-                "weights": weights,
-                "biases": biases
+                "weights": WEIGHTS,
+                "biases": BIASES
             },
             ConditionExpression="attribute_not_exists(showId)"
         )
@@ -44,8 +41,8 @@ def lambda_handler(event, context):
         users_table.put_item(
             Item={
                 "userId": user,
-                "weights": weights,
-                "biases": biases
+                "weights": WEIGHTS,
+                "biases": BIASES
             },
             ConditionExpression="attribute_not_exists(userId)"
         )
