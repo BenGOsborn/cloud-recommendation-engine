@@ -1,5 +1,5 @@
 from aws_cdk import (
-    # Duration,
+    Duration,
     Stack,
     aws_dynamodb as dynamodb_,
     aws_sqs as sqs_,
@@ -77,6 +77,7 @@ class CloudRecommendationStack(Stack):
             code=lambda_.DockerImageCode.from_image_asset(
                 os.path.join(os.getcwd(), "..", "src", "data")
             )
+            timeout=Duration.seconds(10)
         )
         scraper.add_event_source(
             event_source_.SqsEventSource(sync_request_queue)
