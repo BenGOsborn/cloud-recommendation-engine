@@ -6,6 +6,7 @@ from aws_cdk import (
     aws_apigateway as apigateway_,
     aws_iam as iam_,
     aws_lambda as lambda_,
+    aws_lambda_event_sources as event_source_
 )
 from constructs import Construct
 import os
@@ -69,13 +70,16 @@ class CloudRecommendationStack(Stack):
             ]
         )
 
-        # Lambda scraper
+        # Lambda scraper integrated with SQS
         scraper = lambda_.DockerImageFunction(
             self,
             "scraperFunction",
             code=lambda_.DockerImageCode.from_image_asset(
                 os.path.join(os.getcwd(), "..", "src", "data")
             )
+        )
+        scraper.add_event_source(
+            event_source_.SqsEventSource(sync_request_queue)
         )
         ratings_table.grant_read_write_data(scraper)
 
