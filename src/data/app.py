@@ -12,6 +12,7 @@ def lambda_handler(event, context):
         user = body["user"]
 
         data = utils.scrape(user)
+
         table.put_item(
             Item={"userId": user, "data": json.dumps(data)}
         )
