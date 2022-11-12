@@ -17,11 +17,11 @@ class MatrixFactorization(torch.nn.Module):
 n = 1
 x = 10
 
-weights1 = torch.rand(n, x)
-weights2 = torch.rand(n, x)
+weights1 = torch.rand(n, x, requires_grad=True)
+weights2 = torch.rand(n, x, requires_grad=True)
 
-biases1 = torch.rand(n, 1)
-biases2 = torch.rand(n, 1)
+biases1 = torch.rand(n, 1, requires_grad=True)
+biases2 = torch.rand(n, 1, requires_grad=True)
 
 target = torch.tensor([[1]] * n)
 
@@ -32,3 +32,5 @@ print("Weights 2", weights2)
 print("Biases 1", biases2)
 
 print("Target", target)
+
+model = MatrixFactorization()
