@@ -9,13 +9,16 @@ class MatrixFactorization(torch.nn.Module):
 
     # Weights = n * x, Biases = n * 1
     def forward(self, weights1, biases1, weights2, biases2):
-        pred = torch.dot(weights1, weights2) + biases1 + biases2
+        pred = weights1 * weights2
+        pred = torch.sum(pred, dim=1, keepdim=True)
+        pred = pred + biases1 + biases2
 
         return torch.relu(pred)
 
 
-n = 1
+n = 3
 x = 10
+
 
 weights1 = torch.rand(n, x, requires_grad=True)
 weights2 = torch.rand(n, x, requires_grad=True)
@@ -34,3 +37,12 @@ print("Biases 1", biases2)
 print("Target", target)
 
 model = MatrixFactorization()
+
+loss = torch.nn.MSELoss()
+
+epochs = 1
+
+for epoch in range(epochs):
+    prediction = model(weights1, biases1, weights2, biases2)
+
+    print("Prediction", prediction)
