@@ -21,12 +21,14 @@ def lambda_handler(event, context):
 
         data = utils.scrape(user)
 
-        # **** Hold on, consider that there are multiple data items that need to be inserted ?
-
+        # Store a list of reviewed shows from the user
+        shows = [
+            (show["anime_id"], show["score"], show["created_at"]) for show in data
+        ]
         users_table.put_item(
             Item={
                 "userId": user,
-                "records": json.dumps()
+                "shows": json.dumps(shows)
             }
         )
 
