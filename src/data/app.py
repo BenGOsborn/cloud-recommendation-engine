@@ -49,28 +49,26 @@ def lambda_handler(event, context):
                 raise
 
         # Store metadata about each show
-        with shows_table.batch_writer() as writer:
-            for show in shows:
-                writer.put_item(
-                    Item={
-                        "showId": show["anime_id"],
-                        "animeTitle": show["anime_title"],
-                        "animeTitleEng": show["anime_title_eng"],
-                    }
-                )
+        for show in shows:
+            shows_table.put_item(
+                Item={
+                    "showId": show["anime_id"],
+                    "animeTitle": show["anime_title"],
+                    "animeTitleEng": show["anime_title_eng"],
+                }
+            )
 
         # Create weights and biases for shows if they dont exist
-        try:
-            with shows_params_table.batch_writer() as writer:
-                for show in shows:
-                    writer.put_item(
-                        Item={
-                            "showId": show["anime_id"],
-                            "weights": WEIGHTS,
-                            "biases": BIASES
-                        },
-                        ConditionExpression="attribute_not_exists(showId)"
-                    )
-        except botocore.exceptions.ClientError as e:
-            if e.response["Error"]["Code"] != "ConditionalCheckFailedException":
-                raise
+        for show in shows:
+            try:
+                shows_params_table.put_item(
+                    Item={
+                        "showId": show["anime_id"],
+                        "weights": WEIGHTS,
+                        "biases": BIASES
+                    },
+                    ConditionExpression="attribute_not_exists(showId)"
+                )
+            except botocore.exceptions.ClientError as e:
+                if e.response["Error"]["Code"] != "ConditionalCheckFailedException":
+                    raise

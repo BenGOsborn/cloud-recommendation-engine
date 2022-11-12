@@ -31,7 +31,7 @@ def scrape(user: str):
         ]
 
         for trait in traits:
-            temp[trait] = row[trait] if trait in row else None
+            temp[trait] = str(row[trait]) if trait in row else None
 
         out.append(temp)
 
