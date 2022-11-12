@@ -32,17 +32,31 @@ print("Weights 1", weights1)
 print("Biases 1", biases1)
 
 print("Weights 2", weights2)
-print("Biases 1", biases2)
+print("Biases 2", biases2)
 
 print("Target", target)
 
+learning_rate = 0.007
+
 model = MatrixFactorization()
-
 loss = torch.nn.MSELoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-epochs = 1
+epochs = 10
 
 for epoch in range(epochs):
     prediction = model(weights1, biases1, weights2, biases2)
 
-    print("Prediction", prediction)
+    l = loss(prediction, target)
+
+    l.backward()
+
+
+prediction = model(weights1, biases1, weights2, biases2)
+print("Prediction", prediction)
+
+print("NEW Weights 1", weights1)
+print("NEW Biases 1", biases1)
+
+print("NEW Weights 2", weights2)
+print("NEW Biases 2", biases2)
