@@ -26,7 +26,7 @@ def lambda_handler(event, context):
         # **** Also need to initialize new weights here
 
         weights = json.dumps([0] * WEIGHT_SIZE)
-        biases = json.dumps(0)
+        biases = json.dumps([0])
 
         # Insert into shows if it doesnt exist
         shows_table.put_item(
