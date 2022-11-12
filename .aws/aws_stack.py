@@ -19,13 +19,31 @@ class CloudRecommendationStack(Stack):
 
         # ==== Data sync / scraper ====
 
-        # Store ratings
+        # DynamoDB tables
         ratings_table = dynamodb_.Table(
             self,
             id="ratingsTable",
             table_name="ratingsTable",
             partition_key=dynamodb_.Attribute(
                 name="userId",
+                type=dynamodb_.AttributeType.STRING
+            )
+        )
+        users_table = dynamodb_.Table(
+            self,
+            id="usersTable",
+            table_name="usersTable",
+            partition_key=dynamodb_.Attribute(
+                name="id",
+                type=dynamodb_.AttributeType.STRING
+            )
+        )
+        shows_table = dynamodb_.Table(
+            self,
+            id="showsTable",
+            table_name="showsTable",
+            partition_key=dynamodb_.Attribute(
+                name="showId",
                 type=dynamodb_.AttributeType.STRING
             )
         )
@@ -84,6 +102,8 @@ class CloudRecommendationStack(Stack):
             event_source_.SqsEventSource(sync_request_queue)
         )
         ratings_table.grant_read_write_data(scraper)
+        users_table.grant_read_write_data(scraper)
+        shows_table.grant_read_write_data(scraper)
 
         # ==== Recommendation engine ====
 
