@@ -20,7 +20,7 @@ def scrape(user: str):
     out = []
 
     for row in items:
-        temp = []
+        temp = {}
 
         traits = [
             "anime_id",
@@ -31,7 +31,7 @@ def scrape(user: str):
         ]
 
         for trait in traits:
-            temp.append(row[trait] if trait in row else None)
+            temp["trait"] = row[trait] if trait in row else None
 
         out.append(temp)
 
