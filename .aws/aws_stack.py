@@ -60,7 +60,8 @@ class CloudRecommendationStack(Stack):
                 ]
             )
         )
-        api_gateway.root.add_method(
+        sync_data_resource = api_gateway.root.add_resource("syncData")
+        sync_data_resource.add_method(
             "POST",
             api_gateway_sqs_integration,
             method_responses=[
