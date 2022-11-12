@@ -3,6 +3,9 @@ import json
 import utils
 
 
+WEIGHT_SIZE = 12
+
+
 def lambda_handler(event, context):
     client = boto3.resource("dynamodb")
 
@@ -22,8 +25,24 @@ def lambda_handler(event, context):
 
         # **** Also need to initialize new weights here
 
+        weights = json.dumps([0] * WEIGHT_SIZE)
+
+        # Insert into shows if it doesnt exist
+        shows_table.put_item(
+            Item={
+                "showId": data["anime_id"],
+                "animeTitle": data["anime_title"],
+                "animeTitleEng": data["anime_title_eng"],
+                "weights": weights
+            },
+            ConditionExpression="attribute_not_exists(showId)"
+        )
+
         # Insert into users if it doesnt exist
         users_table.put_item(
-            Item={"userId": user, "data": json.dumps(data)},
+            Item={
+                "userId": user,
+                "weights": weights
+            },
             ConditionExpression="attribute_not_exists(userId)"
         )
