@@ -8,7 +8,7 @@ def lambda_handler(event, context):
     table = client.Table("ratingsTable")
 
     for record in event["Records"]:
-        body = record["body"]
+        body = json.loads(record["body"])
         user = body["user"]
 
         data = utils.scrape(user)
