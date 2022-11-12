@@ -21,18 +21,25 @@ def lambda_handler(event, context):
 
         data = utils.scrape(user)
 
-        # **** We will also check that the user does not have weights - if they do we don't need to update them
-        # **** Same with the movie - if the movie already has weights we do not need to update them
-        # **** However, we can just update the rating freely
+        # **** Hold on, consider that there are multiple data items that need to be inserted ?
 
-        # **** Also need to initialize new weights here
+        users_table.put_item(
+            Item={
+                "userId": user,
+                "records": json.dumps()
+            }
+        )
+
+        ratings_table.put_item(
+            Item={
+                "showId": data["anime_id"]
+            }
+        )
 
         # Insert into shows if it doesnt exist
-        shows_table.put_item(
+        shows_params_table.put_item(
             Item={
                 "showId": data["anime_id"],
-                "animeTitle": data["anime_title"],
-                "animeTitleEng": data["anime_title_eng"],
                 "weights": WEIGHTS,
                 "biases": BIASES
             },
