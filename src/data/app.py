@@ -26,6 +26,7 @@ def lambda_handler(event, context):
         # **** Also need to initialize new weights here
 
         weights = json.dumps([0] * WEIGHT_SIZE)
+        biases = json.dumps(0)
 
         # Insert into shows if it doesnt exist
         shows_table.put_item(
@@ -33,7 +34,8 @@ def lambda_handler(event, context):
                 "showId": data["anime_id"],
                 "animeTitle": data["anime_title"],
                 "animeTitleEng": data["anime_title_eng"],
-                "weights": weights
+                "weights": weights,
+                "biases": biases
             },
             ConditionExpression="attribute_not_exists(showId)"
         )
@@ -42,7 +44,8 @@ def lambda_handler(event, context):
         users_table.put_item(
             Item={
                 "userId": user,
-                "weights": weights
+                "weights": weights,
+                "biases": biases
             },
             ConditionExpression="attribute_not_exists(userId)"
         )
