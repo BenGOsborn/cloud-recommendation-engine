@@ -20,6 +20,9 @@ def lambda_handler(event, context):
         # **** Same with the movie - if the movie already has weights we do not need to update them
         # **** However, we can just update the rating freely
 
-        # table.put_item(
-        #     Item={"userId": user, "data": json.dumps(data)}
-        # )
+        # **** Also need to initialize new weights here
+
+        users_table.put_item(
+            Item={"userId": user, "data": json.dumps(data)},
+            ConditionExpression="attribute_not_exists(userId)"
+        )
