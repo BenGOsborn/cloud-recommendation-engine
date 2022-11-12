@@ -1,5 +1,6 @@
 import boto3
 import json
+import utils
 
 
 def lambda_handler(event, context):
@@ -8,5 +9,10 @@ def lambda_handler(event, context):
 
     for record in event["Records"]:
         body = record["body"]
+        user = body["user"]
 
-        print(body)
+        data = utils.scrape(user)
+        dynamodb.put_item(
+            TableName=table_name,
+            Item={"userId": {"S": json.dumps(data)}}
+        )
