@@ -20,15 +20,6 @@ class CloudRecommendationStack(Stack):
         # ==== Data sync / scraper ====
 
         # DynamoDB tables
-        ratings_table = dynamodb_.Table(
-            self,
-            id="ratingsTable",
-            table_name="ratingsTable",
-            partition_key=dynamodb_.Attribute(
-                name="id",
-                type=dynamodb_.AttributeType.STRING
-            )
-        )
         users_table = dynamodb_.Table(
             self,
             id="usersTable",
@@ -119,7 +110,6 @@ class CloudRecommendationStack(Stack):
         scraper.add_event_source(
             event_source_.SqsEventSource(sync_request_queue)
         )
-        ratings_table.grant_read_write_data(scraper)
         users_table.grant_read_write_data(scraper)
         users_params_table.grant_read_write_data(scraper)
         shows_table.grant_read_write_data(scraper)
