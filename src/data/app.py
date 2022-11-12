@@ -22,6 +22,7 @@ def lambda_handler(event, context):
 
         # **** Also need to initialize new weights here
 
+        # Insert into users if it doesnt exist
         users_table.put_item(
             Item={"userId": user, "data": json.dumps(data)},
             ConditionExpression="attribute_not_exists(userId)"
