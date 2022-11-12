@@ -1,4 +1,5 @@
 import boto3
+import botocore
 import json
 import utils
 
@@ -34,14 +35,18 @@ def lambda_handler(event, context):
         )
 
         # Create weights and biases for users if they dont exist
-        users_params_table.put_item(
-            Item={
-                "userId": user,
-                "weights": WEIGHTS,
-                "biases": BIASES
-            },
-            ConditionExpression="attribute_not_exists(userId)"
-        )
+        try:
+            users_params_table.put_item(
+                Item={
+                    "userId": user,
+                    "weights": WEIGHTS,
+                    "biases": BIASES
+                },
+                ConditionExpression="attribute_not_exists(userId)"
+            )
+        except botocore.exceptions.ClientError as e:
+            if e.response["Error"]["Code"] != "ConditionalCheckFailedException":
+                raise
 
         # Store metadata about each show
         with shows_table.batch_writer() as writer:
@@ -55,13 +60,17 @@ def lambda_handler(event, context):
                 )
 
         # Create weights and biases for shows if they dont exist
-        with shows_params_table.batch_writer() as writer:
-            for show in shows:
-                writer.put_item(
-                    Item={
-                        "showId": show["anime_id"],
-                        "weights": WEIGHTS,
-                        "biases": BIASES
-                    },
-                    ConditionExpression="attribute_not_exists(showId)"
-                )
+        try:
+            with shows_params_table.batch_writer() as writer:
+                for show in shows:
+                    writer.put_item(
+                        Item={
+                            "showId": show["anime_id"],
+                            "weights": WEIGHTS,
+                            "biases": BIASES
+                        },
+                        ConditionExpression="attribute_not_exists(showId)"
+                    )
+        except botocore.exceptions.ClientError as e:
+            if e.response["Error"]["Code"] != "ConditionalCheckFailedException":
+                raise
