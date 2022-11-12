@@ -1,17 +1,34 @@
 import torch
 
+torch.manual_seed(1234)
+
 
 class MatrixFactorization(torch.nn.Module):
-    def __init__(self, weights1, biases1, weights2, biases2):
+    def __init__(self):
         super().__init__()
 
-        # **** Remember, it will have to do multiple of the weights and biases at the same time - make sure it can compensate for this (that is one weights tensor = multiple users / shows)
+    # Weights = n * x, Biases = n * 1
+    def forward(self, weights1, biases1, weights2, biases2):
+        pred = torch.dot(weights1, weights2) + biases1 + biases2
 
-        self.weights1 = weights1
-        self.biases1 = biases1
+        return torch.relu(pred)
 
-        self.weights2 = weights2
-        self.biases2 = biases2
 
-    def forward(self):
-        pass
+n = 1
+x = 10
+
+weights1 = torch.rand(n, x)
+weights2 = torch.rand(n, x)
+
+biases1 = torch.rand(n, 1)
+biases2 = torch.rand(n, 1)
+
+target = torch.tensor([[1]] * n)
+
+print("Weights 1", weights1)
+print("Biases 1", biases1)
+
+print("Weights 2", weights2)
+print("Biases 1", biases2)
+
+print("Target", target)
