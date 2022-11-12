@@ -10,6 +10,7 @@ def lambda_handler(event, context):
     client = boto3.resource("dynamodb")
 
     ratings_table = client.Table("ratingsTable")
+    users_table = client.Table("usersTable")
     users_params_table = client.Table("usersParamsTable")
     shows_table = client.Table("showsTable")
     shows_params_table = client.Table("showsParamsTable")
