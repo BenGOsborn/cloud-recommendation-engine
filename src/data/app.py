@@ -4,8 +4,9 @@ import json
 import utils
 
 WEIGHTS_SIZE = 12
-WEIGHTS = json.dumps([0] * WEIGHTS_SIZE)
-BIASES = json.dumps([0])
+WEIGHTS_DEFAULT = json.dumps([0] * WEIGHTS_SIZE)
+BIASES_DEFAULT = json.dumps([0])
+CLUSTER_DEFAULT = 0
 
 
 def lambda_handler(event, context):
@@ -39,8 +40,9 @@ def lambda_handler(event, context):
             users_params_table.put_item(
                 Item={
                     "userId": user,
-                    "weights": WEIGHTS,
-                    "biases": BIASES
+                    "weights": WEIGHTS_DEFAULT,
+                    "biases": BIASES_DEFAULT,
+                    "cluster": CLUSTER_DEFAULT
                 },
                 ConditionExpression="attribute_not_exists(userId)"
             )
@@ -64,8 +66,9 @@ def lambda_handler(event, context):
                 shows_params_table.put_item(
                     Item={
                         "showId": show["anime_id"],
-                        "weights": WEIGHTS,
-                        "biases": BIASES
+                        "weights": WEIGHTS_DEFAULT,
+                        "biases": BIASES_DEFAULT,
+                        "cluster": CLUSTER_DEFAULT
                     },
                     ConditionExpression="attribute_not_exists(showId)"
                 )
