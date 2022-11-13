@@ -37,6 +37,24 @@ def to_tensor(raw_tensor: List, grad: bool):
     )
 
 
+# Create batches of tensors to train the model on at parts of a time
+def batch(batch_size: int):
+    pass
+
+
 # Train the weights and biases
 def fit(weights1: torch.Tensor, biases1: torch.Tensor, weights2: torch.Tensor, biases2: torch.Tensor, target: torch.Tensor):
-    pass
+    optimizer = torch.optim.Adam(
+        [weights1, biases1, weights2, biases2],
+        lr=LEARNING_RATE
+    )
+
+    for epoch in range(EPOCHS):
+        prediction = model(weights1, biases1, weights2, biases2)
+
+        l = loss_fn(prediction, target)
+
+        l.backward()
+
+        optimizer.step()
+        optimizer.zero_grad()

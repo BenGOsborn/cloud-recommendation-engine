@@ -3,7 +3,7 @@ import json
 
 
 def lambda_handler(event, context):
-    # Load weights and biases from the request
+    # Load model params from the request
     body = json.loads(event["body"])
 
     weights1_raw = body["weights1"]
@@ -11,6 +11,7 @@ def lambda_handler(event, context):
     weights2_raw = body["weights2"]
     biases2_raw = body["biases2"]
 
+    # Convert raw params to tensors
     weights1, biases1, weights2, biases2 = [
         utils.to_tensor(raw_tensor, True) for raw_tensor in [
             weights1_raw,
