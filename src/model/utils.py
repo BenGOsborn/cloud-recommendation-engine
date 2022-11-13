@@ -4,7 +4,7 @@ import torch
 
 LEARNING_RATE = 0.007
 EPOCHS = 1000
-BATCH_SIZE = 16
+BATCH_SIZE = 4
 
 
 class MatrixFactorization(torch.nn.Module):
@@ -71,13 +71,15 @@ def fit(weights1: torch.Tensor, biases1: torch.Tensor, weights2: torch.Tensor, b
 
 
 if __name__ == "__main__":
-    weights1 = to_tensor([[1, 0]], True)
-    biases1 = to_tensor([1], True)
-    weights2 = to_tensor([[0, 1]], True)
-    biases2 = to_tensor([1], True)
+    temp_batch_size = 8
 
-    target = to_tensor([1], False)
-    mask = to_tensor([0], False)
+    weights1 = to_tensor([[1, 0]] * temp_batch_size, True)
+    biases1 = to_tensor([1] * temp_batch_size, True)
+    weights2 = to_tensor([[0, 1]] * temp_batch_size, True)
+    biases2 = to_tensor([1] * temp_batch_size, True)
+
+    target = to_tensor([1] * temp_batch_size, False)
+    mask = to_tensor([0] * temp_batch_size, False)
 
     new_params = fit(weights1, biases1, weights2, biases2, target, mask)
 
