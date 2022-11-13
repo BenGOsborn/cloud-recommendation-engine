@@ -5,7 +5,7 @@ import utils
 
 WEIGHTS_SIZE = 12
 WEIGHTS_DEFAULT = json.dumps([0] * WEIGHTS_SIZE)
-BIASES_DEFAULT = json.dumps([0])
+BIASES_DEFAULT = 0
 CLUSTER_DEFAULT = 0
 
 
