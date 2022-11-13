@@ -4,6 +4,8 @@ import json
 
 def lambda_handler(event, context):
     # Load model params from the request
+    print(event)
+
     body = json.loads(event["body"])
 
     weights1_raw = body["weights1"]

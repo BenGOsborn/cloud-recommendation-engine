@@ -124,7 +124,8 @@ class CloudRecommendationStack(Stack):
             code=lambda_.DockerImageCode.from_image_asset(
                 os.path.join(os.getcwd(), "..", "src", "model"),
                 file="inference.Dockerfile"
-            )
+            ),
+            timeout=Duration.minutes(1)
         )
 
         # ==== Recommendation engine ====
