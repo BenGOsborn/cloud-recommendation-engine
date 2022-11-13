@@ -123,9 +123,15 @@ class CloudRecommendationStack(Stack):
             "cloudRecommendationModelImage",
             directory=os.path.join(os.getcwd(), "..", "src", "model")
         )
+        model_role = iam_.Role(
+            self,
+            id="modelRole",
+            assumed_by=iam_.ServicePrincipal("sagemaker.amazonaws.com")
+        )
         model = sagemaker_.CfnModel(
             self,
-            "cloudRecommendationModelImage",
+            "cloudRecommendationModel",
+            execution_role_arn=model_role.role_arn,
             primary_container=sagemaker_.CfnModel.ContainerDefinitionProperty(
                 image=model_container.image_uri
             )
