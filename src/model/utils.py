@@ -18,12 +18,6 @@ class MatrixFactorization(torch.nn.Module):
         # Apply user biases vertically
         biases1 = biases1.unsqueeze(0).transpose(0, 1)
 
-        print(weights1)
-        print(weights2)
-
-        print(biases1)
-        print(biases2)
-
         pred = torch.matmul(weights1, weights2)
         pred = pred + biases1 + biases2
 
