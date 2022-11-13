@@ -1,6 +1,10 @@
 import torch
 
 
+LEARNING_RATE = 0.007
+EPOCHS = 1000
+
+
 class MatrixFactorization(torch.nn.Module):
     def __init__(self):
         super().__init__()
@@ -14,6 +18,7 @@ class MatrixFactorization(torch.nn.Module):
         return torch.relu(pred)
 
 
+model = MatrixFactorization()
 loss_fn = torch.nn.MSELoss()
 
 
@@ -38,21 +43,15 @@ if __name__ == "__main__":
 
     print("Target", target)
 
-    learning_rate = 0.007
-
-    model = MatrixFactorization()
-    loss = torch.nn.MSELoss()
     optimizer = torch.optim.Adam(
         [weights1, biases1, weights2, biases2],
-        lr=learning_rate
+        lr=LEARNING_RATE
     )
 
-    epochs = 1000
-
-    for epoch in range(epochs):
+    for epoch in range(EPOCHS):
         prediction = model(weights1, biases1, weights2, biases2)
 
-        l = loss(prediction, target)
+        l = loss_fn(prediction, target)
 
         l.backward()
 
