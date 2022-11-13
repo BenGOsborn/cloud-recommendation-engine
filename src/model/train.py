@@ -14,16 +14,12 @@ def lambda_handler(event, context):
     mask_raw = body["mask"]
 
     # Convert raw params to tensors
-    weights1, biases1, weights2, biases2, target, mask = [
-        utils.to_tensor(raw_tensor, False) for raw_tensor in [
-            weights1_raw,
-            biases1_raw,
-            weights2_raw,
-            biases2_raw,
-            target_raw,
-            mask_raw,
-        ]
-    ]
+    weights1 = utils.to_tensor(weights1_raw, True)
+    biases1 = utils.to_tensor(biases1_raw, True)
+    weights2 = utils.to_tensor(weights2_raw, True)
+    biases2 = utils.to_tensor(biases2_raw, True)
+    target = utils.to_tensor(target_raw, False)
+    mask = utils.to_tensor(mask_raw, False)
 
     # Train model
     utils.fit(weights1, biases1, weights2, biases2, target, mask)
