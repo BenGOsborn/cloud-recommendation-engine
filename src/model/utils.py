@@ -13,6 +13,7 @@ class MatrixFactorization(torch.nn.Module):
 
     # Users = weights1 + biases1, Shows = weights2 + biases2
     # Weights1 = n * k, Biases1 = n * 1, Weights2 = m * k, Biases2 = m * 1 (n = amount of users, k = latent vector size, m = number of shows)
+    # Output = n * m
     def forward(self, weights1: torch.Tensor, biases1: torch.Tensor, weights2: torch.Tensor, biases2: torch.Tensor):
         # Apply all shows to every user
         weights2 = torch.transpose(weights2, 0, 1)
@@ -49,6 +50,9 @@ def fit(weights1: torch.Tensor, biases1: torch.Tensor, weights2: torch.Tensor, b
         lr=LEARNING_RATE
     )
 
+    # **** Hold on, these minibatches are wrong - we need to consider them quadratically, now just linearly like we currently have e.g.
+    # we need to break it down so we have (u1, (s1, s2, ... sn)), (u2, (s1, s2, ... sn) ...)
+
     for _ in range(EPOCHS):
         for i in range(((len(weights1) - 1) // BATCH_SIZE) + 1):
             batch = (
@@ -59,6 +63,10 @@ def fit(weights1: torch.Tensor, biases1: torch.Tensor, weights2: torch.Tensor, b
                 target[i:i + BATCH_SIZE, ...],
                 mask[i:i + BATCH_SIZE, ...],
             )
+
+            for elem in batch:
+                print(elem.shape)
+            print()
 
             prediction = model(*batch[:-2])
 
@@ -71,15 +79,22 @@ def fit(weights1: torch.Tensor, biases1: torch.Tensor, weights2: torch.Tensor, b
 
 
 if __name__ == "__main__":
-    temp_batch_size = 8
+    users_temp_batch_size = 8
+    shows_temp_batch_size = 4
 
-    weights1 = to_tensor([[1, 0]] * temp_batch_size, True)
-    biases1 = to_tensor([1] * temp_batch_size, True)
-    weights2 = to_tensor([[0, 1]] * temp_batch_size, True)
-    biases2 = to_tensor([1] * temp_batch_size, True)
+    weights1 = to_tensor([[1, 0]] * users_temp_batch_size, True)
+    biases1 = to_tensor([1] * users_temp_batch_size, True)
+    weights2 = to_tensor([[0, 1]] * shows_temp_batch_size, True)
+    biases2 = to_tensor([1] * shows_temp_batch_size, True)
 
-    target = to_tensor([1] * temp_batch_size, False)
-    mask = to_tensor([0] * temp_batch_size, False)
+    target = to_tensor(
+        [[1] * shows_temp_batch_size] * users_temp_batch_size,
+        False
+    )
+    mask = to_tensor(
+        [[0] * shows_temp_batch_size] * users_temp_batch_size,
+        False
+    )
 
     new_params = fit(weights1, biases1, weights2, biases2, target, mask)
 
