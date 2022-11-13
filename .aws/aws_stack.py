@@ -118,24 +118,24 @@ class CloudRecommendationStack(Stack):
         shows_params_table.grant_read_write_data(scraper)
 
         # ==== Create and deploy model ====
-        model_container = ecr_assets.DockerImageAsset(
-            self,
-            "cloudRecommendationModelImage",
-            directory=os.path.join(os.getcwd(), "..", "src", "model")
-        )
-        model_role = iam_.Role(
-            self,
-            id="modelRole",
-            assumed_by=iam_.ServicePrincipal("sagemaker.amazonaws.com")
-        )
-        model = sagemaker_.CfnModel(
-            self,
-            "cloudRecommendationModel",
-            execution_role_arn=model_role.role_arn,
-            primary_container=sagemaker_.CfnModel.ContainerDefinitionProperty(
-                image=model_container.image_uri
-            )
-        )
+        # model_container = ecr_assets.DockerImageAsset(
+        #     self,
+        #     "cloudRecommendationModelImage",
+        #     directory=os.path.join(os.getcwd(), "..", "src", "model")
+        # )
+        # model_role = iam_.Role(
+        #     self,
+        #     id="modelRole",
+        #     assumed_by=iam_.ServicePrincipal("sagemaker.amazonaws.com")
+        # )
+        # model = sagemaker_.CfnModel(
+        #     self,
+        #     "cloudRecommendationModel",
+        #     execution_role_arn=model_role.role_arn,
+        #     primary_container=sagemaker_.CfnModel.ContainerDefinitionProperty(
+        #         image=model_container.image_uri
+        #     )
+        # )
 
         # ==== Recommendation engine ====
 

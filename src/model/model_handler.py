@@ -5,14 +5,16 @@ class HandlerService(DefaultHandlerService):
     def __init__(self):
         super().__init__()
 
-        self.initiazed = False
-
     # Initialize handler
     def initialize(self, context):
+        print("HELLO WORLD FROM INITIALIZE", context)
+
         return super().initialize(context)
 
     # Handle an incoming request
     def handle(self, data, context):
+        print("HELLO WORLD FROM HANDLE", data, context)
+
         return super().handle(data, context)
 
 
