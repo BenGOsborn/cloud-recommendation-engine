@@ -43,39 +43,22 @@ def to_tensor(raw_tensor: List, grad: bool):
     return torch.tensor(raw_tensor, dtype=torch.float32, requires_grad=grad)
 
 
-# Train the params using minibatch gradient descent
+# Train the params using gradient descent
 def fit(weights1: torch.Tensor, biases1: torch.Tensor, weights2: torch.Tensor, biases2: torch.Tensor, target: torch.Tensor, mask: torch.Tensor):
     optimizer = torch.optim.Adam(
         [weights1, biases1, weights2, biases2],
         lr=LEARNING_RATE
     )
 
-    # **** Hold on, these minibatches are wrong - we need to consider them quadratically, now just linearly like we currently have e.g.
-    # we need to break it down so we have (u1, (s1, s2, ... sn)), (u2, (s1, s2, ... sn) ...)
-
     for _ in range(EPOCHS):
-        for i in range(((len(weights1) - 1) // BATCH_SIZE) + 1):
-            batch = (
-                weights1[i:i + BATCH_SIZE, ...],
-                biases1[i:i + BATCH_SIZE, ...],
-                weights2[i:i + BATCH_SIZE, ...],
-                biases2[i:i + BATCH_SIZE, ...],
-                target[i:i + BATCH_SIZE, ...],
-                mask[i:i + BATCH_SIZE, ...],
-            )
+        prediction = model(weights1, biases1, weights2, biases2)
 
-            for elem in batch:
-                print(elem.shape)
-            print()
+        l = loss_fn(prediction, target, mask)
 
-            prediction = model(*batch[:-2])
+        l.backward()
 
-            l = loss_fn(prediction, *batch[-2:])
-
-            l.backward()
-
-            optimizer.step()
-            optimizer.zero_grad()
+        optimizer.step()
+        optimizer.zero_grad()
 
 
 if __name__ == "__main__":
