@@ -4,7 +4,6 @@ import torch
 
 LEARNING_RATE = 0.007
 EPOCHS = 50
-BATCH_SIZE = 4
 
 
 class MatrixFactorization(torch.nn.Module):
