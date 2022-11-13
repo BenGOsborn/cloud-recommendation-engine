@@ -1,13 +1,8 @@
-FROM python:3.8
+FROM public.ecr.aws/lambda/python:3.8
 
 # Install requirements
-COPY requirements.txt .
+RUN pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu
 
-RUN pip3 install -r requirements.txt
+COPY app.py utils.py  ./
 
-# Copy model entrypoint and handler
-COPY entrypoint.py /usr/local/bin/entrypoint.py
-
-COPY model_handler.py /home/model-server/model_handler.py
-
-ENTRYPOINT ["python", "/usr/local/bin/entrypoint.py"]
+CMD [ "app.lambda_handler" ]
