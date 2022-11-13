@@ -18,11 +18,6 @@ def lambda_handler(event, context):
         biases2_raw
     )
 
-    print("Weights1", weights1)
-    print("Biases1", biases1)
-    print("Weights2", weights2)
-    print("Biases1", biases2)
-
     # Make predictions
     predictions = utils.model(weights1, biases1, weights2, biases2)
 
@@ -33,12 +28,15 @@ def lambda_handler(event, context):
 
 
 if __name__ == "__main__":
+    users = 4
+    shows = 2
+
     event = {
         "body": json.dumps({
-            "weights1": [[1, 0]],
-            "biases1": [0],
-            "weights2": [[0, 1]],
-            "biases2": [0],
+            "weights1": [[1, 0]] * users,
+            "biases1": [1] * users,
+            "weights2": [[0, 1]] * shows,
+            "biases2": [1] * shows,
         })
     }
 
