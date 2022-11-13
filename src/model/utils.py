@@ -4,6 +4,7 @@ import torch
 
 LEARNING_RATE = 0.007
 EPOCHS = 1000
+BATCH_SIZE = 16
 
 
 class MatrixFactorization(torch.nn.Module):
@@ -25,36 +26,69 @@ class MatrixFactorization(torch.nn.Module):
 
 
 model = MatrixFactorization()
-loss_fn = torch.nn.MSELoss()
+
+
+# Mean squared error loss with masking - mask is binary matrix where 0 means keep and 1 means ignore
+def loss_fn(predicted, actual, mask):
+    mse = (predicted - actual) ** 2
+    to_remove = mask * mse
+    mse = mse - to_remove
+
+    return torch.mean(mse)
 
 
 # Convert from list to tensor
 def to_tensor(raw_tensor: List, grad: bool):
-    return torch.tensor(
-        raw_tensor,
-        dtype=torch.float32,
-        requires_grad=grad
-    )
+    return torch.tensor(raw_tensor, dtype=torch.float32, requires_grad=grad)
 
 
-# Create batches of tensors to train the model on at parts of a time
-def batch(batch_size: int):
-    pass
-
-
-# Train the weights and biases
-def fit(weights1: torch.Tensor, biases1: torch.Tensor, weights2: torch.Tensor, biases2: torch.Tensor, target: torch.Tensor):
+# Train the params
+def fit(weights1: torch.Tensor, biases1: torch.Tensor, weights2: torch.Tensor, biases2: torch.Tensor, target: torch.Tensor, mask: torch.Tensor):
     optimizer = torch.optim.Adam(
         [weights1, biases1, weights2, biases2],
         lr=LEARNING_RATE
     )
 
-    for epoch in range(EPOCHS):
-        prediction = model(weights1, biases1, weights2, biases2)
+    # Create batches
+    weights1 = torch.split(weights1, BATCH_SIZE)
+    biases1 = torch.split(biases1, BATCH_SIZE)
+    weights2 = torch.split(weights2, BATCH_SIZE)
+    biases2 = torch.split(biases2, BATCH_SIZE)
+    target = torch.split(target, BATCH_SIZE)
+    mask = torch.split(mask, BATCH_SIZE)
 
-        l = loss_fn(prediction, target)
+    for _ in range(EPOCHS):
+        for i in range(weights1(len)):
+            batch = (
+                weights1[i],
+                biases1[i],
+                weights2[i],
+                biases2[i],
+                target[i],
+                mask[i],
+            )
 
-        l.backward()
+            prediction = model(*batch[:-2])
 
-        optimizer.step()
-        optimizer.zero_grad()
+            l = loss_fn(prediction, *batch[-2:])
+
+            l.backward()
+
+            optimizer.step()
+            optimizer.zero_grad()
+
+
+if __name__ == "__main__":
+    weights1 = to_tensor([[1, 0]], True)
+    biases1 = to_tensor([1], True)
+    weights2 = to_tensor([[0, 1]], True)
+    biases2 = to_tensor([1], True)
+
+    target = [1]
+    mask = [0]
+
+    print(weights1, biases1, weights2, biases2)
+
+    fit(weights1, biases1, weights2, biases2, target, mask)
+
+    print(weights1, biases1, weights2, biases2)

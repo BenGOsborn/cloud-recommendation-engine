@@ -13,7 +13,7 @@ def lambda_handler(event, context):
 
     # Convert raw params to tensors
     weights1, biases1, weights2, biases2 = [
-        utils.to_tensor(raw_tensor, True) for raw_tensor in [
+        utils.to_tensor(raw_tensor, False) for raw_tensor in [
             weights1_raw,
             biases1_raw,
             weights2_raw,
