@@ -28,30 +28,15 @@ model = MatrixFactorization()
 loss_fn = torch.nn.MSELoss()
 
 
-# Transform input weights and biases to Pytorch tensors
-def transform_data(weights1: List[List[float]], biases1: List[List[float]], weights2: List[List[float]], biases2: List[List[float]]):
-    weights1_tensor = torch.tensor(
-        weights1,
+# Convert from list to tensor
+def to_tensor(raw_tensor: List, grad: bool):
+    return torch.tensor(
+        raw_tensor,
         dtype=torch.float32,
-        requires_grad=True
+        requires_grad=grad
     )
 
-    weights2_tensor = torch.tensor(
-        weights2,
-        dtype=torch.float32,
-        requires_grad=True
-    )
 
-    biases1_tensor = torch.tensor(
-        biases1,
-        dtype=torch.float32,
-        requires_grad=True
-    )
-
-    biases2_tensor = torch.tensor(
-        biases2,
-        dtype=torch.float32,
-        requires_grad=True
-    )
-
-    return weights1_tensor, biases1_tensor, weights2_tensor, biases2_tensor
+# Train the weights and biases
+def fit(weights1: torch.Tensor, biases1: torch.Tensor, weights2: torch.Tensor, biases2: torch.Tensor, target: torch.Tensor):
+    pass

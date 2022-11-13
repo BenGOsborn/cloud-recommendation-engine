@@ -11,12 +11,14 @@ def lambda_handler(event, context):
     weights2_raw = body["weights2"]
     biases2_raw = body["biases2"]
 
-    weights1, biases1, weights2, biases2 = utils.transform_data(
-        weights1_raw,
-        biases1_raw,
-        weights2_raw,
-        biases2_raw
-    )
+    weights1, biases1, weights2, biases2 = [
+        utils.to_tensor(raw_tensor, True) for raw_tensor in [
+            weights1_raw,
+            biases1_raw,
+            weights2_raw,
+            biases2_raw
+        ]
+    ]
 
     # Make predictions
     predictions = utils.model(weights1, biases1, weights2, biases2)
