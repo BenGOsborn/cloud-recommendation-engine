@@ -7,8 +7,6 @@ from aws_cdk import (
     aws_iam as iam_,
     aws_lambda as lambda_,
     aws_lambda_event_sources as event_source_,
-    aws_sagemaker as sagemaker_,
-    aws_ecr_assets as ecr_assets,
 )
 from constructs import Construct
 import os
@@ -141,4 +139,13 @@ class CloudRecommendationStack(Stack):
 
         # ==== Request recommendations ====
 
-        # ==== Training ====
+        # ==== Get recommendations ====
+        recommendations_table = dynamodb_.Table(
+            self,
+            id="recommendationsTable",
+            table_name="recommendationsTable",
+            partition_key=dynamodb_.Attribute(
+                name="userId",
+                type=dynamodb_.AttributeType.STRING
+            )
+        )
