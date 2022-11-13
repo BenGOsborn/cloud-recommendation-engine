@@ -13,7 +13,7 @@ def _retry_if_error(exception):
 @retry(stop_max_delay=1000 * 50, retry_on_exception=_retry_if_error)
 def _start_mms():
     model_server.start_model_server(
-        handler_service="/home/model-server/model_handler.py:handle"
+        handler_service="/home/model-server/handler.py:handle"
     )
 
 
