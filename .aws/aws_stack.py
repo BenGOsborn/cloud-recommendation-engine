@@ -127,6 +127,15 @@ class CloudRecommendationStack(Stack):
             ),
             timeout=Duration.minutes(1)
         )
+        train_model = lambda_.DockerImageFunction(
+            self,
+            "trainModelFunction",
+            code=lambda_.DockerImageCode.from_image_asset(
+                os.path.join(os.getcwd(), "..", "src", "model"),
+                file="train.Dockerfile"
+            ),
+            timeout=Duration.minutes(1)
+        )
 
         # ==== Recommendation engine ====
 
