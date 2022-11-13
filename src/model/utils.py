@@ -49,33 +49,15 @@ def fit(weights1: torch.Tensor, biases1: torch.Tensor, weights2: torch.Tensor, b
         lr=LEARNING_RATE
     )
 
-    # Create batches
-    weights1 = torch.split(weights1, BATCH_SIZE)
-    biases1 = torch.split(biases1, BATCH_SIZE)
-    weights2 = torch.split(weights2, BATCH_SIZE)
-    biases2 = torch.split(biases2, BATCH_SIZE)
-    target = torch.split(target, BATCH_SIZE)
-    mask = torch.split(mask, BATCH_SIZE)
-
     for _ in range(EPOCHS):
-        for i in range(weights1(len)):
-            batch = (
-                weights1[i],
-                biases1[i],
-                weights2[i],
-                biases2[i],
-                target[i],
-                mask[i],
-            )
+        prediction = model(weights1, biases1, weights2, biases2)
 
-            prediction = model(*batch[:-2])
+        l = loss_fn(prediction, target, mask)
 
-            l = loss_fn(prediction, *batch[-2:])
+        l.backward()
 
-            l.backward()
-
-            optimizer.step()
-            optimizer.zero_grad()
+        optimizer.step()
+        optimizer.zero_grad()
 
 
 if __name__ == "__main__":
@@ -84,11 +66,13 @@ if __name__ == "__main__":
     weights2 = to_tensor([[0, 1]], True)
     biases2 = to_tensor([1], True)
 
-    target = [1]
-    mask = [0]
+    target = to_tensor([1], False)
+    mask = to_tensor([0], False)
 
     print(weights1, biases1, weights2, biases2)
 
     fit(weights1, biases1, weights2, biases2, target, mask)
 
     print(weights1, biases1, weights2, biases2)
+
+    print(model(weights1, biases1, weights2, biases2))
