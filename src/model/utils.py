@@ -1,3 +1,4 @@
+from typing import List
 import torch
 
 
@@ -25,10 +26,9 @@ loss_fn = torch.nn.MSELoss()
 if __name__ == "__main__":
     x = 10
     y = 10
-    z = 1
 
-    weights1 = torch.rand(x, y, z, requires_grad=True)
-    weights2 = torch.rand(x, y, z, requires_grad=True)
+    weights1 = torch.rand(x, y, 1, requires_grad=True)
+    weights2 = torch.rand(x, y, 1, requires_grad=True)
 
     biases1 = torch.rand(x, 1, 1, requires_grad=True)
     biases2 = torch.rand(x, 1, 1, requires_grad=True)
@@ -66,3 +66,18 @@ if __name__ == "__main__":
 
     print("NEW Weights 2", weights2)
     print("NEW Biases 2", biases2)
+
+
+# Transform input weights and biases to Pytorch tensors
+def transform_data(weights1: List[List[float]], biases1: List[List[float]], weights2: List[List[float]], biases2: List[List[float]]):
+    weights1_tensor = torch.tensor(weights1, requires_grad=True)
+    torch.reshape(weights1_tensor, (len(weights1), -1, 1))
+
+    weights2_tensor = torch.tensor(weights2, requires_grad=True)
+    torch.reshape(weights2_tensor, (len(weights2), -1, 1))
+
+    biases1_tensor = torch.tensor(biases1, requires_grad=True)
+    torch.reshape(biases1_tensor, (len(biases1), 1, 1))
+
+    biases2_tensor = torch.tensor(biases2, requires_grad=True)
+    torch.reshape(biases2_tensor, (len(biases2), 1, 1))
