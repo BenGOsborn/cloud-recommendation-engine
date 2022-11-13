@@ -10,7 +10,8 @@ class MatrixFactorization(torch.nn.Module):
     def __init__(self):
         super().__init__()
 
-    # Weights = x * y, Biases = x * 1
+    # Users = weights1 + biases1, Shows = weights2 + biases2
+    # Weights1 = n * k, Biases1 = n * 1, Weights2 = m * k, Biases2 = m * 1 (n = amount of users, k = latent vector size, m = number of shows)
     def forward(self, weights1: torch.Tensor, biases1: torch.Tensor, weights2: torch.Tensor, biases2: torch.Tensor):
         weights2 = torch.transpose(weights2, 0, 1)
         biases1 = biases1.unsqueeze(0).transpose(0, 1)
