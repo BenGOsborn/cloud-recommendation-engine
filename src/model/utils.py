@@ -42,7 +42,7 @@ def to_tensor(raw_tensor: List, grad: bool):
     return torch.tensor(raw_tensor, dtype=torch.float32, requires_grad=grad)
 
 
-# Train the params
+# Train the params using minibatch gradient descent
 def fit(weights1: torch.Tensor, biases1: torch.Tensor, weights2: torch.Tensor, biases2: torch.Tensor, target: torch.Tensor, mask: torch.Tensor):
     optimizer = torch.optim.Adam(
         [weights1, biases1, weights2, biases2],
@@ -50,14 +50,24 @@ def fit(weights1: torch.Tensor, biases1: torch.Tensor, weights2: torch.Tensor, b
     )
 
     for _ in range(EPOCHS):
-        prediction = model(weights1, biases1, weights2, biases2)
+        for i in range(len(weights1) // BATCH_SIZE):
+            batch = (
+                weights1[i:i + BATCH_SIZE, ...],
+                biases1[i:i + BATCH_SIZE, ...],
+                weights2[i:i + BATCH_SIZE, ...],
+                biases2[i:i + BATCH_SIZE, ...],
+                target[i:i + BATCH_SIZE, ...],
+                mask[i:i + BATCH_SIZE, ...],
+            )
 
-        l = loss_fn(prediction, target, mask)
+            prediction = model(*batch[:-2])
 
-        l.backward()
+            l = loss_fn(prediction, *batch[-2:])
 
-        optimizer.step()
-        optimizer.zero_grad()
+            l.backward()
+
+            optimizer.step()
+            optimizer.zero_grad()
 
 
 if __name__ == "__main__":
@@ -69,10 +79,6 @@ if __name__ == "__main__":
     target = to_tensor([1], False)
     mask = to_tensor([0], False)
 
-    print(weights1, biases1, weights2, biases2)
-
-    fit(weights1, biases1, weights2, biases2, target, mask)
-
-    print(weights1, biases1, weights2, biases2)
+    new_params = fit(weights1, biases1, weights2, biases2, target, mask)
 
     print(model(weights1, biases1, weights2, biases2))
