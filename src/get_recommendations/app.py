@@ -14,9 +14,7 @@ def lambda_handler(event, context):
         "userId": user
     })
 
-    print(recommendations)
-
     return {
         "statusCode": 200,
-        "body": json.loads(recommendations)
+        "body": json.dumps(recommendations)
     }
