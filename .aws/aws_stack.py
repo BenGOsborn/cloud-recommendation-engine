@@ -117,9 +117,15 @@ class CloudRecommendationStack(Stack):
         shows_table.grant_read_write_data(scraper)
         shows_params_table.grant_read_write_data(scraper)
 
-        # ==== Create and deploy model ====
-
-        # **** NOTE **** - model should be deployed with SageMaker and has only been deployed with Lambda for testing
+        # ==== Create and deploy model - NOTE model should be deployed with SageMaker and has only been deployed with Lambda for testing ====
+        inference_model = lambda_.DockerImageFunction(
+            self,
+            "inferenceModelFunction",
+            code=lambda_.DockerImageCode.from_image_asset(
+                os.path.join(os.getcwd(), "..", "src", "model"),
+                file="inference.Dockerfile"
+            )
+        )
 
         # ==== Recommendation engine ====
 
