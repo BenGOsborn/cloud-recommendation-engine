@@ -30,6 +30,7 @@ model = MatrixFactorization()
 
 
 # Mean squared error loss with masking - mask is binary matrix where 0 means keep and 1 means ignore
+# predicted.shape == actual.shape == mask.shape
 def loss_fn(predicted, actual, mask):
     mse = (predicted - actual) ** 2
     to_remove = mask * mse
@@ -59,26 +60,3 @@ def fit(weights1: torch.Tensor, biases1: torch.Tensor, weights2: torch.Tensor, b
 
         optimizer.step()
         optimizer.zero_grad()
-
-
-if __name__ == "__main__":
-    users_temp_batch_size = 8
-    shows_temp_batch_size = 4
-
-    weights1 = to_tensor([[1, 0]] * users_temp_batch_size, True)
-    biases1 = to_tensor([1] * users_temp_batch_size, True)
-    weights2 = to_tensor([[0, 1]] * shows_temp_batch_size, True)
-    biases2 = to_tensor([1] * shows_temp_batch_size, True)
-
-    target = to_tensor(
-        [[1] * shows_temp_batch_size] * users_temp_batch_size,
-        False
-    )
-    mask = to_tensor(
-        [[0] * shows_temp_batch_size] * users_temp_batch_size,
-        False
-    )
-
-    new_params = fit(weights1, biases1, weights2, biases2, target, mask)
-
-    print(model(weights1, biases1, weights2, biases2))
