@@ -50,7 +50,7 @@ def fit(weights1: torch.Tensor, biases1: torch.Tensor, weights2: torch.Tensor, b
     )
 
     for _ in range(EPOCHS):
-        for i in range(len(weights1) // BATCH_SIZE):
+        for i in range(max(len(weights1) // BATCH_SIZE, 1)):
             batch = (
                 weights1[i:i + BATCH_SIZE, ...],
                 biases1[i:i + BATCH_SIZE, ...],
@@ -59,6 +59,8 @@ def fit(weights1: torch.Tensor, biases1: torch.Tensor, weights2: torch.Tensor, b
                 target[i:i + BATCH_SIZE, ...],
                 mask[i:i + BATCH_SIZE, ...],
             )
+
+            print(batch)
 
             prediction = model(*batch[:-2])
 
