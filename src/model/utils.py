@@ -79,7 +79,7 @@ if __name__ == "__main__":
     biases2 = to_tensor([1] * temp_batch_size, True)
 
     target = to_tensor([1] * temp_batch_size, False)
-    mask = to_tensor([0] * temp_batch_size, False)
+    mask = to_tensor([[0] * temp_batch_size] * temp_batch_size, False)
 
     new_params = fit(weights1, biases1, weights2, biases2, target, mask)
 
