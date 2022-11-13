@@ -3,7 +3,7 @@ import torch
 
 
 LEARNING_RATE = 0.007
-EPOCHS = 1000
+EPOCHS = 50
 BATCH_SIZE = 4
 
 
