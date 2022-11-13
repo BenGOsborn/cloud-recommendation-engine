@@ -107,7 +107,7 @@ class CloudRecommendationStack(Stack):
             code=lambda_.DockerImageCode.from_image_asset(
                 os.path.join(os.getcwd(), "..", "src", "data")
             ),
-            timeout=Duration.seconds(60)
+            timeout=Duration.minutes(10)
         )
         scraper.add_event_source(
             event_source_.SqsEventSource(sync_request_queue)
