@@ -81,3 +81,5 @@ def transform_data(weights1: List[List[float]], biases1: List[List[float]], weig
 
     biases2_tensor = torch.tensor(biases2, requires_grad=True)
     torch.reshape(biases2_tensor, (len(biases2), 1, 1))
+
+    return weights1_tensor, biases1_tensor, weights2_tensor, biases2_tensor
