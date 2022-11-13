@@ -99,7 +99,7 @@ class CloudRecommendationStack(Stack):
         )
 
         # Lambda scraper integrated with SQS
-        scraper = lambda_.DockerImageFunction(
+        scraper_function = lambda_.DockerImageFunction(
             self,
             "scraperFunction",
             code=lambda_.DockerImageCode.from_image_asset(
@@ -107,16 +107,16 @@ class CloudRecommendationStack(Stack):
             ),
             timeout=Duration.minutes(10)
         )
-        scraper.add_event_source(
+        scraper_function.add_event_source(
             event_source_.SqsEventSource(sync_request_queue)
         )
-        users_table.grant_read_write_data(scraper)
-        users_params_table.grant_read_write_data(scraper)
-        shows_table.grant_read_write_data(scraper)
-        shows_params_table.grant_read_write_data(scraper)
+        users_table.grant_read_write_data(scraper_function)
+        users_params_table.grant_read_write_data(scraper_function)
+        shows_table.grant_read_write_data(scraper_function)
+        shows_params_table.grant_read_write_data(scraper_function)
 
         # ==== Create and deploy model - NOTE model should be deployed with SageMaker and has only been deployed with Lambda for testing ====
-        inference_model = lambda_.DockerImageFunction(
+        inference_model_function = lambda_.DockerImageFunction(
             self,
             "inferenceModelFunction",
             code=lambda_.DockerImageCode.from_image_asset(
@@ -125,7 +125,7 @@ class CloudRecommendationStack(Stack):
             ),
             timeout=Duration.minutes(1)
         )
-        train_model = lambda_.DockerImageFunction(
+        train_model_function = lambda_.DockerImageFunction(
             self,
             "trainModelFunction",
             code=lambda_.DockerImageCode.from_image_asset(
@@ -136,10 +136,6 @@ class CloudRecommendationStack(Stack):
         )
 
         # ==== Recommendation engine ====
-
-        # ==== Request recommendations ====
-
-        # ==== Get recommendations ====
         recommendations_table = dynamodb_.Table(
             self,
             id="recommendationsTable",
@@ -148,4 +144,30 @@ class CloudRecommendationStack(Stack):
                 name="userId",
                 type=dynamodb_.AttributeType.STRING
             )
+        )
+
+        # ==== Request recommendations ====
+
+        # ==== Get recommendations ====
+        get_recommendations_function = lambda_.DockerImageFunction(
+            self,
+            "getRecommendationsFunction",
+            code=lambda_.DockerImageCode.from_image_asset(
+                os.path.join(os.getcwd(), "..", "src", "get_recommendations")
+            ),
+            timeout=Duration.seconds(10)
+        )
+        recommendations_table.grant_read_data(get_recommendations_function)
+        get_recommendations_function_integration = apigateway_.LambdaIntegration(
+            get_recommendations_function,
+            request_templates={
+                "application/json": "{\"statusCode\": \"200\"}"
+            }
+        )
+        get_recommendations_resource = api_gateway.root.add_resource(
+            "recommendations"
+        )
+        get_recommendations_resource.add_method(
+            "GET",
+            get_recommendations_function_integration
         )
