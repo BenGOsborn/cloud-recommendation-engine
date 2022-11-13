@@ -1,0 +1,1 @@
+sagemaker-inference==1.8.0
