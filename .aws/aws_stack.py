@@ -6,7 +6,9 @@ from aws_cdk import (
     aws_apigateway as apigateway_,
     aws_iam as iam_,
     aws_lambda as lambda_,
-    aws_lambda_event_sources as event_source_
+    aws_lambda_event_sources as event_source_,
+    aws_sagemaker as sagemaker_,
+    aws_ecr_assets as ecr_assets,
 )
 from constructs import Construct
 import os
@@ -114,6 +116,20 @@ class CloudRecommendationStack(Stack):
         users_params_table.grant_read_write_data(scraper)
         shows_table.grant_read_write_data(scraper)
         shows_params_table.grant_read_write_data(scraper)
+
+        # ==== Create and deploy model ====
+        model_container = ecr_assets.DockerImageAsset(
+            self,
+            "cloudRecommendationModelImage",
+            directory=os.path.join(os.getcwd(), "..", "src", "model")
+        )
+        model = sagemaker_.CfnModel(
+            self,
+            "cloudRecommendationModelImage",
+            primary_container=sagemaker_.CfnModel.ContainerDefinitionProperty(
+                image=model_container.image_uri
+            )
+        )
 
         # ==== Recommendation engine ====
 
