@@ -167,6 +167,9 @@ class CloudRecommendationStack(Stack):
         shows_params_table.grant_read_write_data(
             generate_recommendations_function
         )
+        inference_model_function.grant_invoke(
+            generate_recommendations_function
+        )
 
         # ==== Get recommendations ====
         get_recommendations_function = lambda_.DockerImageFunction(

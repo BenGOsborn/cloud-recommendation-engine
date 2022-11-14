@@ -7,7 +7,7 @@ MAX_SHOWS = 5
 
 def lambda_handler(event, context):
     db_client = boto3.resource("dynamodb")
-    lambda_client = boto3.resource("lambda")
+    lambda_client = boto3.client("lambda")
 
     shows_table = db_client.Table("showsTable")
     shows_params_table = db_client.Table("showsParamsTable")
@@ -61,14 +61,14 @@ def lambda_handler(event, context):
     biases2 = [float(params["biases"]) for params in show_params]
 
     results = lambda_client.invoke(
-        FunctionName="CloudRecommendationStack-generateRecommendationsFu-Jhy7LBXUaEXH",
+        FunctionName="CloudRecommendationStack-inferenceModelFunction453-3HfaVvNKfXZQ",
         InvocationType="RequestResponse",
-        Payload=json.dumps({
+        Payload=json.dumps({"body": {
             "weights1": weights1,
             "biases1": biases1,
             "weights2": weights2,
             "biases2": biases2
-        })
+        }})
     )
 
-    print(results)
+    print(json.loads(results["Payload"].read().decode("utf-8")))
