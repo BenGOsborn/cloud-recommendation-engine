@@ -123,7 +123,7 @@ class CloudRecommendationStack(Stack):
                 os.path.join(os.getcwd(), "..", "src", "model"),
                 file="inference.Dockerfile"
             ),
-            timeout=Duration.minutes(1)
+            timeout=Duration.minutes(10)
         )
         train_model_function = lambda_.DockerImageFunction(
             self,
@@ -132,10 +132,10 @@ class CloudRecommendationStack(Stack):
                 os.path.join(os.getcwd(), "..", "src", "model"),
                 file="train.Dockerfile"
             ),
-            timeout=Duration.minutes(1)
+            timeout=Duration.minutes(10)
         )
 
-        # ==== Recommendation engine ====
+        # ==== Request recommendations ====
         recommendations_table = dynamodb_.Table(
             self,
             id="recommendationsTable",
@@ -146,7 +146,17 @@ class CloudRecommendationStack(Stack):
             )
         )
 
-        # ==== Request recommendations ====
+        generate_recommendations_function = lambda_.DockerImageFunction(
+            self,
+            "generateRecommendationsFunction",
+            code=lambda_.DockerImageCode.from_image_asset(
+                os.path.join(os.getcwd(), "..", "src", "generate_recommendations")
+            ),
+            timeout=Duration.minutes(10)
+        )
+        recommendations_table.grant_read_write_data(generate_recommendations_function)
+        users_table.grant_read_write_data(generate_recommendations_function)
+        shows_table.grant_read_write_data(generate_recommendations_function)
 
         # ==== Get recommendations ====
         get_recommendations_function = lambda_.DockerImageFunction(

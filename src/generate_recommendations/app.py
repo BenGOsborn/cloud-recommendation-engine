@@ -5,7 +5,7 @@ import json
 def lambda_handler(event, context):
     client = boto3.resource("dynamodb")
 
-    users_table = client.Table("recommendationsTable")
+    users_table = client.Table("usersTable")
     shows_table = client.Table("showsTable")
     recommendations_table = client.Table("recommendationsTable")
 
