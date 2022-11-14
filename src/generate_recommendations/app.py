@@ -23,10 +23,14 @@ def lambda_handler(event, context):
         users_.append(user_)
 
     shows = shows_table.scan(Limit=100)
-    users = users_table.batch_get_item(
-        RequestItems=[
-            {"userId": user} for user in users
-        ]
+    users = client.batch_get_item(
+        RequestItems={
+            "usersTable": {
+                "Keys": [
+                    {"userId": user} for user in users
+                ]
+            }
+        }
     )
 
     print(shows)
