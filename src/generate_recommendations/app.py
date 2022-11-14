@@ -3,13 +3,13 @@ import json
 from boto3.dynamodb.conditions import Attr
 
 MAX_SHOWS = 5
+MAX_RECOMMENDATIONS = 20
 
 
 def lambda_handler(event, context):
     db_client = boto3.resource("dynamodb")
     lambda_client = boto3.client("lambda")
 
-    shows_table = db_client.Table("showsTable")
     shows_params_table = db_client.Table("showsParamsTable")
     recommendations_table = db_client.Table("recommendationsTable")
 
@@ -77,4 +77,15 @@ def lambda_handler(event, context):
         results["Payload"].read().decode("utf-8")
     )["predictions"]
 
-    print(predictions)
+    # Process predictions and recommend movies
+    for i in range(len(predictions)):
+        temp_shows = [
+            (prediction, shows[j]) for j, prediction in enumerate(predictions[i])
+        ]
+        temp_shows = sorted(temp_shows, key=lambda x: x[0], reverse=True)
+        temp_shows = temp_shows[:MAX_RECOMMENDATIONS]
+
+        recommendations_table.put_item(Item={
+            "userId": users[i],
+            "recommended": temp_shows
+        })
