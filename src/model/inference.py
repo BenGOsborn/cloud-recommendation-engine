@@ -21,5 +21,5 @@ def lambda_handler(event, context):
     predictions = utils.model(weights1, biases1, weights2, biases2)
 
     return {
-        "predictions": json.dumps(predictions.tolist())
+        "predictions": predictions.tolist()
     }

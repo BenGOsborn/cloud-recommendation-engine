@@ -63,12 +63,16 @@ def lambda_handler(event, context):
     results = lambda_client.invoke(
         FunctionName="CloudRecommendationStack-inferenceModelFunction453-3HfaVvNKfXZQ",
         InvocationType="RequestResponse",
-        Payload=json.dumps({"body": {
-            "weights1": weights1,
-            "biases1": biases1,
-            "weights2": weights2,
-            "biases2": biases2
-        }})
+        Payload=json.dumps({
+            "body": json.dumps({
+                "weights1": weights1,
+                "biases1": biases1,
+                "weights2": weights2,
+                "biases2": biases2
+            })
+        })
     )
 
-    print(json.loads(results["Payload"].read().decode("utf-8")))
+    predictions = results["Payload"].read().decode("utf-8")["predictions"]
+
+    print(predictions)

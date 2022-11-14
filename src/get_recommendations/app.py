@@ -16,5 +16,5 @@ def lambda_handler(event, context):
 
     return {
         "statusCode": 200,
-        "body": json.dumps(recommendations["Item"]) if "Item" in recommendations else None
+        "body": recommendations["Item"] if "Item" in recommendations else None
     }
