@@ -7,8 +7,8 @@ MAX_SHOWS = 5
 def lambda_handler(event, context):
     client = boto3.resource("dynamodb")
 
-    users_table = client.Table("usersTable")
     shows_table = client.Table("showsTable")
+    shows_params_table = client.Table("showsParamsTable")
     recommendations_table = client.Table("recommendationsTable")
 
     # Steps
@@ -17,23 +17,33 @@ def lambda_handler(event, context):
     # 3. Create the data matrix, have the model inference it
     # 4. Read the selected movies data and then assign them recommendations
 
-    users_ = []
+    users = []
 
     for record in event["Records"]:
         body = json.loads(record["body"])
-        user_ = body["user"]
-        users_.append(user_)
+        user = body["user"]
+        users.append(user)
 
+    # Get list of shows to rate
     shows_response = shows_table.scan(Limit=MAX_SHOWS)
     shows = shows_response["Items"] if "Items" in shows_response else []
 
-    users_response = client.batch_get_item(
+    # Get params
+    params_response = client.batch_get_item(
         RequestItems={
-            "usersTable": {
+            "usersParamsTable": {
                 "Keys": [
-                    {"userId": user} for user in users_
+                    {"userId": user} for user in users
+                ]
+            },
+            "showsParamsTable": {
+                "Keys": [
+                    {"showId": show["showId"]} for show in shows
                 ]
             }
         }
     )
-    users = users_response["Responses"]
+    params = params_response["Responses"]
+
+    user_params = params["usersParamsTable"]
+    show_params = params["showsParamsTable"]
