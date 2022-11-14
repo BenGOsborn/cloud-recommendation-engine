@@ -1,6 +1,8 @@
 import boto3
 import json
 
+MAX_SHOWS = 5
+
 
 def lambda_handler(event, context):
     client = boto3.resource("dynamodb")
@@ -22,16 +24,16 @@ def lambda_handler(event, context):
         user_ = body["user"]
         users_.append(user_)
 
-    shows = shows_table.scan(Limit=100)
-    users = client.batch_get_item(
+    shows_response = shows_table.scan(Limit=MAX_SHOWS)
+    shows = shows_response["Items"] if "Items" in shows_response else []
+
+    users_response = client.batch_get_item(
         RequestItems={
             "usersTable": {
                 "Keys": [
-                    {"userId": user} for user in users
+                    {"userId": user} for user in users_
                 ]
             }
         }
     )
-
-    print(shows)
-    print(users)
+    users = users_response["Responses"]
