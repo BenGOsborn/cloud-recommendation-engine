@@ -171,3 +171,5 @@ class CloudRecommendationStack(Stack):
             "GET",
             get_recommendations_function_integration
         )
+
+        # ==== Train recommendation model ====
