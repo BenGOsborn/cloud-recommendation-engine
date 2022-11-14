@@ -6,11 +6,12 @@ MAX_SHOWS = 5
 
 
 def lambda_handler(event, context):
-    client = boto3.resource("dynamodb")
+    db_client = boto3.resource("dynamodb")
+    lambda_client = boto3.resource("lambda")
 
-    shows_table = client.Table("showsTable")
-    shows_params_table = client.Table("showsParamsTable")
-    recommendations_table = client.Table("recommendationsTable")
+    shows_table = db_client.Table("showsTable")
+    shows_params_table = db_client.Table("showsParamsTable")
+    recommendations_table = db_client.Table("recommendationsTable")
 
     # Steps
     # 1. First select a random number of shows for all of the users (initially everything)
@@ -34,7 +35,7 @@ def lambda_handler(event, context):
     ]
 
     # Get user params and shows
-    batch_res = client.batch_get_item(
+    batch_res = db_client.batch_get_item(
         RequestItems={
             "usersParamsTable": {
                 "Keys": [
@@ -53,13 +54,21 @@ def lambda_handler(event, context):
     user_params = batch["usersParamsTable"]
     shows = batch["showsTable"]
 
-    # Merge the weights and params together
+    # Make predictions from the weights and biases
     weights1 = [json.loads(params["weights"]) for params in user_params]
-    biases1 = [json.loads(params["biases"]) for params in user_params]
+    biases1 = [float(params["biases"]) for params in user_params]
     weights2 = [json.loads(params["weights"]) for params in show_params]
-    biases2 = [json.loads(params["biases"]) for params in show_params]
+    biases2 = [float(params["biases"]) for params in show_params]
 
-    print(weights1)
-    print(biases1)
-    print(weights2)
-    print(biases2)
+    results = lambda_client.invoke(
+        FunctionName="CloudRecommendationStack-generateRecommendationsFu-Jhy7LBXUaEXH",
+        InvocationType="RequestResponse",
+        Payload=json.dumps({
+            "weights1": weights1,
+            "biases1": biases1,
+            "weights2": weights2,
+            "biases2": biases2
+        })
+    )
+
+    print(results)
