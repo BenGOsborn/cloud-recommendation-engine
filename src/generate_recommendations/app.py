@@ -73,6 +73,8 @@ def lambda_handler(event, context):
         })
     )
 
-    predictions = results["Payload"].read().decode("utf-8")["predictions"]
+    predictions = json.loads(
+        results["Payload"].read().decode("utf-8")
+    )["predictions"]
 
     print(predictions)
