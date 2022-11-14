@@ -1,5 +1,6 @@
 import boto3
 import json
+from boto3.dynamodb.conditions import Attr
 
 MAX_SHOWS = 5
 
@@ -24,26 +25,37 @@ def lambda_handler(event, context):
         user = body["user"]
         users.append(user)
 
-    # Get list of shows to rate
-    shows_response = shows_table.scan(Limit=MAX_SHOWS)
-    shows = shows_response["Items"] if "Items" in shows_response else []
+    # Get list of show params
+    show_params_res = shows_params_table.scan(
+        FilterExpression=Attr("cluster").eq(0),
+        Limit=MAX_SHOWS
+    )
+    show_params = show_params_res["Items"] if "Items" in show_params_res else [
+    ]
 
-    # Get params
-    params_response = client.batch_get_item(
+    # Get user params and shows
+    batch_res = client.batch_get_item(
         RequestItems={
             "usersParamsTable": {
                 "Keys": [
                     {"userId": user} for user in users
                 ]
             },
-            "showsParamsTable": {
+            "showsTable": {
                 "Keys": [
-                    {"showId": show["showId"]} for show in shows
+                    {"showId": show["showId"]} for show in show_params
                 ]
             }
         }
     )
-    params = params_response["Responses"]
+    batch = batch_res["Responses"]
 
-    user_params = params["usersParamsTable"]
-    show_params = params["showsParamsTable"]
+    user_params = batch["usersParamsTable"]
+    shows = batch["showsTable"]
+
+    print(show_params)
+    print(user_params)
+    print(shows)
+
+    # Merge the weights and params together
+    weights1 = user_params
