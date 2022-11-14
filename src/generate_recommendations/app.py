@@ -53,9 +53,13 @@ def lambda_handler(event, context):
     user_params = batch["usersParamsTable"]
     shows = batch["showsTable"]
 
-    print(show_params)
-    print(user_params)
-    print(shows)
-
     # Merge the weights and params together
-    weights1 = user_params
+    weights1 = [json.loads(params["weights"]) for params in user_params]
+    biases1 = [json.loads(params["biases"]) for params in user_params]
+    weights2 = [json.loads(params["weights"]) for params in show_params]
+    biases2 = [json.loads(params["biases"]) for params in show_params]
+
+    print(weights1)
+    print(biases1)
+    print(weights2)
+    print(biases2)
