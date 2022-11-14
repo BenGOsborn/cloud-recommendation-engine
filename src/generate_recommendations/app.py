@@ -13,12 +13,7 @@ def lambda_handler(event, context):
     shows_params_table = db_client.Table("showsParamsTable")
     recommendations_table = db_client.Table("recommendationsTable")
 
-    # Steps
-    # 1. First select a random number of shows for all of the users (initially everything)
-    # 2. Next get the full list of user and associated show params from the database
-    # 3. Create the data matrix, have the model inference it
-    # 4. Read the selected movies data and then assign them recommendations
-
+    # Get list of users
     users = []
 
     for record in event["Records"]:
@@ -87,5 +82,5 @@ def lambda_handler(event, context):
 
         recommendations_table.put_item(Item={
             "userId": users[i],
-            "recommended": temp_shows
+            "recommended": json.dumps(temp_shows)
         })
