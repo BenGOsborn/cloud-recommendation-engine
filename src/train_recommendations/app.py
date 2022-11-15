@@ -69,18 +69,18 @@ def lambda_handler(event, context):
     training_matrix = []
     mask = []
 
-    for i in range(user_params):
+    for i in range(len(user_params)):
         temp_training_matrix = []
         temp_mask = []
 
-        for j in range(show_params):
+        for j in range(len(show_params)):
             show_id = shows_freq_list[j][0]
 
             if i not in show_freq[show_id]:
                 temp_training_matrix.append(0)
                 temp_mask.append(1)
             else:
-                temp_training_matrix.append(show_freq[show_id][i])
+                temp_training_matrix.append(show_freq[show_id][i] / 10)
                 temp_mask.append(0)
 
         training_matrix.append(temp_training_matrix)

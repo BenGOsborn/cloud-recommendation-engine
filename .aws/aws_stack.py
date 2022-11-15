@@ -209,13 +209,13 @@ class CloudRecommendationStack(Stack):
         recommendations_table.grant_read_write_data(
             generate_recommendations_function
         )
-        users_params_table.grant_read_write_data(
+        users_params_table.grant_read_data(
             generate_recommendations_function
         )
-        shows_table.grant_read_write_data(
+        shows_table.grant_read_data(
             generate_recommendations_function
         )
-        shows_params_table.grant_read_write_data(
+        shows_params_table.grant_read_data(
             generate_recommendations_function
         )
         inference_model_function.grant_invoke(
@@ -255,4 +255,12 @@ class CloudRecommendationStack(Stack):
             ),
             timeout=Duration.minutes(10)
         )
-        users_table.grant_read_write_data(train_recommendations_function)
+        users_table.grant_read_data(
+            train_recommendations_function
+        )
+        users_params_table.grant_read_write_data(
+            train_recommendations_function
+        )
+        shows_params_table.grant_read_write_data(
+            train_recommendations_function
+        )
