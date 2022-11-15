@@ -247,3 +247,12 @@ class CloudRecommendationStack(Stack):
         )
 
         # ==== Train recommendation model ====
+        train_recommendations_function = lambda_.DockerImageFunction(
+            self,
+            "trainRecommendationsFunction",
+            code=lambda_.DockerImageCode.from_image_asset(
+                os.path.join(os.getcwd(), "..", "src", "train_recommendations")
+            ),
+            timeout=Duration.minutes(10)
+        )
+        users_table.grant_read_write_data(train_recommendations_function)
