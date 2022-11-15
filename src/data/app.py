@@ -7,7 +7,7 @@ import utils
 WEIGHTS_SIZE = 12
 WEIGHTS_DEFAULT = json.dumps([0.5] * WEIGHTS_SIZE)
 BIASES_DEFAULT = str(0.5)
-CLUSTER_DEFAULT = 0
+CLUSTER_DEFAULT = str(0)
 
 
 def lambda_handler(event, context):

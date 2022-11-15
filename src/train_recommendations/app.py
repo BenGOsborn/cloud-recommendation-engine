@@ -121,19 +121,20 @@ def lambda_handler(event, context):
     new_biases2 = new_params["biases2"]
 
     # Update the params
-    for i in range(len(new_weights1)):
-        users_params_table.put(
+    for i in range(len(user_params)):
+        users_params_table.put_item(
             Item={
                 "userId": users[i]["userId"],
-                "weights": new_weights1[i],
-                "biases": new_biases1[i],
+                "weights": json.dumps(new_weights1[i]),
+                "biases": str(new_biases1[i]),
             })
 
-        shows_params_table.put(
+    for i in range(len(show_params)):
+        shows_params_table.put_item(
             Item={
                 "showId": shows_freq_list[i][0],
-                "weights": new_weights2[i],
-                "biases": new_biases2[i],
+                "weights": json.dumps(new_weights2[i]),
+                "biases": str(new_biases2[i]),
                 "cluster": show_params[i]["cluster"],
             }
         )
