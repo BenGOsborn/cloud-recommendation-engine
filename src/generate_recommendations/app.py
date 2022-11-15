@@ -2,8 +2,8 @@ import boto3
 import json
 from boto3.dynamodb.conditions import Attr
 
-MAX_SHOWS = 5
-MAX_RECOMMENDATIONS = 20
+MAX_SHOWS = 50
+MAX_RECOMMENDATIONS = 50
 
 
 def lambda_handler(event, context):
