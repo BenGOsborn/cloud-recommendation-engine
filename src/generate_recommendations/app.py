@@ -23,7 +23,7 @@ def lambda_handler(event, context):
 
     # Get list of show params
     show_params_res = shows_params_table.scan(
-        FilterExpression=Attr("cluster").eq(0),
+        FilterExpression=Attr("cluster").eq("0"),
         Limit=MAX_SHOWS
     )
     show_params = show_params_res["Items"] if "Items" in show_params_res else [
