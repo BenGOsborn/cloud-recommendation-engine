@@ -41,7 +41,7 @@ def lambda_handler(event, context):
             users_params_table.put_item(
                 Item={
                     "userId": user,
-                    "weights": [random.random() for _ in range(WEIGHTS_SIZE)],
+                    "weights": json.dumps([random.random() for _ in range(WEIGHTS_SIZE)]),
                     "biases": str(random.random()),
                 },
                 ConditionExpression="attribute_not_exists(userId)"
@@ -66,7 +66,7 @@ def lambda_handler(event, context):
                 shows_params_table.put_item(
                     Item={
                         "showId": show["anime_id"],
-                        "weights": [random.random() for _ in range(WEIGHTS_SIZE)],
+                        "weights": json.dumps([random.random() for _ in range(WEIGHTS_SIZE)]),
                         "biases": str(random.random()),
                         "cluster": str(0),
                     },

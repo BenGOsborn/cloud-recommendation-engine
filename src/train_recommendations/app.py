@@ -2,7 +2,7 @@ import boto3
 import json
 
 
-BATCH_SIZE = 192
+BATCH_SIZE = 50
 
 
 def lambda_handler(event, context):
