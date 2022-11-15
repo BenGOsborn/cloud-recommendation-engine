@@ -271,17 +271,13 @@ class CloudRecommendationStack(Stack):
             train_recommendations_function
         )
 
-        # Setup recurring event bridge - https://www.youtube.com/watch?v=Njn81X6NLI4
-        # event_bus = events.EventBus(self, "eventBus", "eventBus")
-
-        # schedule_train_event_rule = events.Rule(
-        #     self,
-        #     "scheduleTrain",
-        #     rule_name="routeToLambda",
-        #     targets=[
-        #         targets.LambdaFunction(handler=train_recommendations_function)
-        #     ],
-        #     event_bus=event_bus,
-        #     event_pattern=events.EventPattern(source=["XXX"]),
-        #     schedule=
-        # )
+        # Setup recurring event bridge
+        schedule_train_event_rule = events.Rule(
+            self,
+            "scheduleTrain",
+            rule_name="scheduleTrain",
+            targets=[
+                targets.LambdaFunction(handler=train_recommendations_function)
+            ],
+            schedule=events.Schedule.rate(Duration.hours(2))
+        )
