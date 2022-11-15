@@ -25,12 +25,20 @@ def lambda_handler(event, context):
     users = users_res["Items"] if "Items" in users_res else []
 
     # Keep a record of the frequency a show appears
-    shows = {}
-
-    print(users)
+    shows = {}  # {"show": {"0": True, "1": True}}
 
     for i, user in enumerate(users):
-        pass
+        shows_list = json.loads(user["shows"])
+
+        for show in shows_list:
+            show_id = show["showId"]
+
+            if show_id not in shows:
+                shows[show_id] = {}
+
+            shows[show_id][i] = True
+
+    print(shows)
 
     # **** So now we will filter through all of these responses and keep track of the highest recorded movies, select them, and then determine if other users had the same thing
     # **** To do this efficiently we will need to keep some sort of reverse mapping between users of who had what (we can just keep a true false map for each movie)

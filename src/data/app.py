@@ -26,7 +26,9 @@ def lambda_handler(event, context):
 
         # Store a list of reviewed shows from the user
         user_reviewed_shows = json.dumps([
-            (show["anime_id"], show["score"], show["created_at"]) for show in shows
+            {
+                "showId": show["anime_id"], "score": show["score"], "createdAt": show["created_at"]
+            } for show in shows
         ])
         users_table.put_item(
             Item={
