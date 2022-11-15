@@ -6,9 +6,6 @@ import random
 
 # NOTE initial params CANNOT be set to zero otherwise no gradients can be calculated
 WEIGHTS_SIZE = 12
-WEIGHTS_DEFAULT = json.dumps([random.random() for _ in range(WEIGHTS_SIZE)])
-BIASES_DEFAULT = str(random.random())
-CLUSTER_DEFAULT = str(0)
 
 
 def lambda_handler(event, context):
@@ -44,8 +41,8 @@ def lambda_handler(event, context):
             users_params_table.put_item(
                 Item={
                     "userId": user,
-                    "weights": WEIGHTS_DEFAULT,
-                    "biases": BIASES_DEFAULT,
+                    "weights": [random.random() for _ in range(WEIGHTS_SIZE)],
+                    "biases": str(random.random()),
                 },
                 ConditionExpression="attribute_not_exists(userId)"
             )
@@ -69,9 +66,9 @@ def lambda_handler(event, context):
                 shows_params_table.put_item(
                     Item={
                         "showId": show["anime_id"],
-                        "weights": WEIGHTS_DEFAULT,
-                        "biases": BIASES_DEFAULT,
-                        "cluster": CLUSTER_DEFAULT
+                        "weights": [random.random() for _ in range(WEIGHTS_SIZE)],
+                        "biases": str(random.random()),
+                        "cluster": str(0),
                     },
                     ConditionExpression="attribute_not_exists(showId)"
                 )
