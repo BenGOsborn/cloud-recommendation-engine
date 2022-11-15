@@ -64,7 +64,11 @@ class CloudRecommendationStack(Stack):
             assumed_by=iam_.ServicePrincipal("apigateway.amazonaws.com")
         )
 
-        sync_data_queue = sqs_.Queue(self, "syncDataQueue")
+        sync_data_queue = sqs_.Queue(
+            self,
+            "syncDataQueue",
+            visibility_timeout=Duration.minutes(10)
+        )
         sync_data_queue.grant_send_messages(api_gateway_role)
 
         # API gateway SQS integration
@@ -151,7 +155,8 @@ class CloudRecommendationStack(Stack):
         # Integrate SQS with API gateway
         generate_recommendations_queue = sqs_.Queue(
             self,
-            "generateRecommendationsQueue"
+            "generateRecommendationsQueue",
+            visibility_timeout=Duration.minutes(10)
         )
         generate_recommendations_queue.grant_send_messages(api_gateway_role)
 
