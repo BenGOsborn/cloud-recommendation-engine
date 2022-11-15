@@ -8,6 +8,7 @@ from aws_cdk import (
     aws_lambda as lambda_,
     aws_lambda_event_sources as event_source_,
     aws_events as events,
+    aws_events_targets as targets,
 )
 from constructs import Construct
 import os
@@ -270,4 +271,17 @@ class CloudRecommendationStack(Stack):
             train_recommendations_function
         )
 
-        # Setup recurring event bridge
+        # Setup recurring event bridge - https://www.youtube.com/watch?v=Njn81X6NLI4
+        # event_bus = events.EventBus(self, "eventBus", "eventBus")
+
+        # schedule_train_event_rule = events.Rule(
+        #     self,
+        #     "scheduleTrain",
+        #     rule_name="routeToLambda",
+        #     targets=[
+        #         targets.LambdaFunction(handler=train_recommendations_function)
+        #     ],
+        #     event_bus=event_bus,
+        #     event_pattern=events.EventPattern(source=["XXX"]),
+        #     schedule=
+        # )
