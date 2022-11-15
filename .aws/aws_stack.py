@@ -264,3 +264,6 @@ class CloudRecommendationStack(Stack):
         shows_params_table.grant_read_write_data(
             train_recommendations_function
         )
+        train_model_function.grant_invoke(
+            train_recommendations_function
+        )
