@@ -281,3 +281,7 @@ class CloudRecommendationStack(Stack):
             ],
             schedule=events.Schedule.rate(Duration.hours(2))
         )
+
+    # Create dynamodb tables
+    def create_tables():
+        pass
