@@ -3,9 +3,10 @@ import botocore
 import json
 import utils
 
+# NOTE initial params CANNOT be set to zero otherwise no gradients can be calculated
 WEIGHTS_SIZE = 12
-WEIGHTS_DEFAULT = json.dumps([0] * WEIGHTS_SIZE)
-BIASES_DEFAULT = 0
+WEIGHTS_DEFAULT = json.dumps([0.5] * WEIGHTS_SIZE)
+BIASES_DEFAULT = 0.5
 CLUSTER_DEFAULT = 0
 
 
