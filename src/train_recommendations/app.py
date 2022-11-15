@@ -25,7 +25,7 @@ def lambda_handler(event, context):
     users = users_res["Items"] if "Items" in users_res else []
 
     # Keep a record of the frequency a show appears
-    shows = {}  # {"show": {"0": True, "1": True}}
+    show_freq = {}
 
     for i, user in enumerate(users):
         shows_list = json.loads(user["shows"])
@@ -33,10 +33,17 @@ def lambda_handler(event, context):
         for show in shows_list:
             show_id = show["showId"]
 
-            if show_id not in shows:
-                shows[show_id] = {}
+            if show_id not in show_freq:
+                show_freq[show_id] = {}
 
-            shows[show_id][i] = True
+            show_freq[show_id][i] = True
+
+    # Sort the frequencies of the shows and get the highest amount
+    shows = sorted(
+        [(k, len(v)) for k, v in show_freq.items()],
+        key=lambda x: x[0],
+        reverse=True
+    )[:BATCH_SIZE]
 
     print(shows)
 
