@@ -108,4 +108,8 @@ def lambda_handler(event, context):
         })
     )
 
-    print(results)
+    new_params = json.loads(
+        results["Payload"].read().decode("utf-8")
+    )
+
+    print(new_params)
