@@ -7,6 +7,7 @@ from aws_cdk import (
     aws_iam as iam_,
     aws_lambda as lambda_,
     aws_lambda_event_sources as event_source_,
+    aws_events as events,
 )
 from constructs import Construct
 import os
@@ -246,6 +247,8 @@ class CloudRecommendationStack(Stack):
         )
 
         # ==== Train recommendation model ====
+
+        # Setup lambda trainer
         train_recommendations_function = lambda_.DockerImageFunction(
             self,
             "trainRecommendationsFunction",
@@ -266,3 +269,5 @@ class CloudRecommendationStack(Stack):
         train_model_function.grant_invoke(
             train_recommendations_function
         )
+
+        # Setup recurring event bridge
