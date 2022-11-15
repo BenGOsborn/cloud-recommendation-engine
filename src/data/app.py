@@ -2,11 +2,12 @@ import boto3
 import botocore
 import json
 import utils
+import random
 
 # NOTE initial params CANNOT be set to zero otherwise no gradients can be calculated
 WEIGHTS_SIZE = 12
-WEIGHTS_DEFAULT = json.dumps([0.5] * WEIGHTS_SIZE)
-BIASES_DEFAULT = str(0.5)
+WEIGHTS_DEFAULT = json.dumps([random.random() for _ in range(WEIGHTS_SIZE)])
+BIASES_DEFAULT = str(random.random())
 CLUSTER_DEFAULT = str(0)
 
 

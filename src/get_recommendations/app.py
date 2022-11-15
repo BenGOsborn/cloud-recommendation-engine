@@ -8,7 +8,7 @@ def lambda_handler(event, context):
     recommendations_table = client.Table("recommendationsTable")
 
     # Get the recommendations for the user
-    user = event["queryStringParameters"]["userId"]
+    user = event["queryStringParameters"]["user"]
 
     recommendations = recommendations_table.get_item(Key={
         "userId": user
