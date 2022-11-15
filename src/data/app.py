@@ -45,7 +45,6 @@ def lambda_handler(event, context):
                     "userId": user,
                     "weights": WEIGHTS_DEFAULT,
                     "biases": BIASES_DEFAULT,
-                    "cluster": CLUSTER_DEFAULT
                 },
                 ConditionExpression="attribute_not_exists(userId)"
             )

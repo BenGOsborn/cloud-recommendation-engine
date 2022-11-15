@@ -18,6 +18,9 @@ def lambda_handler(event, context):
 
     users_table = db_client.Table("usersTable")
 
+    users_params_table = db_client.Table("usersParamsTable")
+    shows_params_table = db_client.Table("showsParamsTable")
+
     # Get a random sample of users
     users_res = users_table.scan(
         Limit=BATCH_SIZE
@@ -112,4 +115,25 @@ def lambda_handler(event, context):
         results["Payload"].read().decode("utf-8")
     )
 
-    print(new_params)
+    new_weights1 = new_params["weights1"]
+    new_biases1 = new_params["biases1"]
+    new_weights2 = new_params["weights2"]
+    new_biases2 = new_params["biases2"]
+
+    # Update the params
+    for i in range(len(new_weights1)):
+        users_params_table.put(
+            Item={
+                "userId": users[i]["userId"],
+                "weights": new_weights1[i],
+                "biases": new_biases1[i],
+            })
+
+        shows_params_table.put(
+            Item={
+                "showId": shows_freq_list[i][0],
+                "weights": new_weights2[i],
+                "biases": new_biases2[i],
+                "cluster": show_params[i]["cluster"],
+            }
+        )
