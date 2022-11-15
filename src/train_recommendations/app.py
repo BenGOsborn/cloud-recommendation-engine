@@ -36,16 +36,55 @@ def lambda_handler(event, context):
             if show_id not in show_freq:
                 show_freq[show_id] = {}
 
-            show_freq[show_id][i] = True
+            show_freq[show_id][i] = float(show["score"])
 
     # Sort the frequencies of the shows and get the highest amount
-    shows = sorted(
+    shows_freq_list = sorted(
         [(k, len(v)) for k, v in show_freq.items()],
         key=lambda x: x[0],
         reverse=True
     )[:BATCH_SIZE]
 
-    print(shows)
+    # Get the params from the given users and shows
+    batch_res = db_client.batch_get_item(
+        RequestItems={
+            "usersParamsTable": {
+                "Keys": [
+                    {"userId": user["userId"]} for user in users
+                ]
+            },
+            "showsParamsTable": {
+                "Keys": [
+                    {"showId": show[0]} for show in shows_freq_list
+                ]
+            }
+        }
+    )
+    batch = batch_res["Responses"]
 
-    # **** So now we will filter through all of these responses and keep track of the highest recorded movies, select them, and then determine if other users had the same thing
-    # **** To do this efficiently we will need to keep some sort of reverse mapping between users of who had what (we can just keep a true false map for each movie)
+    user_params = batch["usersParamsTable"]
+    show_params = batch["showsParamsTable"]
+
+    # Create training outputs and mask
+    training_matrix = []
+    mask = []
+
+    for i in range(user_params):
+        temp_training_matrix = []
+        temp_mask = []
+
+        for j in range(show_params):
+            show_id = shows_freq_list[j][0]
+
+            if i not in show_freq[show_id]:
+                temp_training_matrix.append(0)
+                temp_mask.append(1)
+            else:
+                temp_training_matrix.append(show_freq[show_id][i])
+                temp_mask.append(0)
+
+        training_matrix.append(temp_training_matrix)
+        mask.append(temp_mask)
+
+    print(training_matrix)
+    print(mask)
