@@ -58,19 +58,22 @@ class CloudRecommendationStack(Stack):
         )
 
         # Integrate sqs directly with API gateway
-        sync_request_queue = sqs_.Queue(self, "syncRequestQueue")
         api_gateway_role = iam_.Role(
             self,
-            id="syncRequestQueueAPIGateway",
+            id="sqsAPIGatewayRole",
             assumed_by=iam_.ServicePrincipal("apigateway.amazonaws.com")
         )
-        sync_request_queue.grant_send_messages(api_gateway_role)
+
+        sync_data_queue = sqs_.Queue(self, "syncDataQueue")
+        sync_data_queue.grant_send_messages(api_gateway_role)
 
         # API gateway SQS integration
         api_gateway = apigateway_.RestApi(self, "recommendationApi")
-        api_gateway_sqs_integration = apigateway_.AwsIntegration(
+
+        sync_data_resource = api_gateway.root.add_resource("syncData")
+        api_gateway_sync_data_sqs_integration = apigateway_.AwsIntegration(
             service="sqs",
-            path=f"{os.getenv('CDK_DEFAULT_ACCOUNT')}/{sync_request_queue.queue_name}",
+            path=f"{os.getenv('CDK_DEFAULT_ACCOUNT')}/{sync_data_queue.queue_name}",
             integration_http_method="POST",
             options=apigateway_.IntegrationOptions(
                 credentials_role=api_gateway_role,
@@ -87,10 +90,9 @@ class CloudRecommendationStack(Stack):
                 ]
             )
         )
-        sync_data_resource = api_gateway.root.add_resource("syncData")
         sync_data_resource.add_method(
             "POST",
-            api_gateway_sqs_integration,
+            api_gateway_sync_data_sqs_integration,
             method_responses=[
                 {"statusCode": "200"},
                 {"statusCode": "400"},
@@ -108,7 +110,7 @@ class CloudRecommendationStack(Stack):
             timeout=Duration.minutes(10)
         )
         scraper_function.add_event_source(
-            event_source_.SqsEventSource(sync_request_queue)
+            event_source_.SqsEventSource(sync_data_queue)
         )
         users_table.grant_read_write_data(scraper_function)
         users_params_table.grant_read_write_data(scraper_function)
@@ -146,14 +148,58 @@ class CloudRecommendationStack(Stack):
             )
         )
 
+        # Integrate SQS with API gateway
+        generate_recommendations_queue = sqs_.Queue(
+            self,
+            "generateRecommendationsQueue"
+        )
+        generate_recommendations_queue.grant_send_messages(api_gateway_role)
+
+        generate_recommendations_resource = api_gateway.root.add_resource(
+            "generateRecommendations"
+        )
+        api_gateway_generate_recommendations_sqs_integration = apigateway_.AwsIntegration(
+            service="sqs",
+            path=f"{os.getenv('CDK_DEFAULT_ACCOUNT')}/{generate_recommendations_queue.queue_name}",
+            integration_http_method="POST",
+            options=apigateway_.IntegrationOptions(
+                credentials_role=api_gateway_role,
+                request_parameters={
+                    "integration.request.header.Content-Type": "'application/x-www-form-urlencoded'"
+                },
+                request_templates={
+                    "application/json": "Action=SendMessage&MessageBody=$input.body"
+                },
+                integration_responses=[
+                    {"statusCode": "200"},
+                    {"statusCode": "400"},
+                    {"statusCode": "500"}
+                ]
+            )
+        )
+        generate_recommendations_resource.add_method(
+            "POST",
+            api_gateway_generate_recommendations_sqs_integration,
+            method_responses=[
+                {"statusCode": "200"},
+                {"statusCode": "400"},
+                {"statusCode": "500"}
+            ]
+        )
+
+        # Lambda recommendations function
         generate_recommendations_function = lambda_.DockerImageFunction(
             self,
             "generateRecommendationsFunction",
             code=lambda_.DockerImageCode.from_image_asset(
-                os.path.join(os.getcwd(), "..", "src",
-                             "generate_recommendations")
+                os.path.join(
+                    os.getcwd(), "..", "src", "generate_recommendations"
+                )
             ),
             timeout=Duration.minutes(10)
+        )
+        generate_recommendations_function.add_event_source(
+            event_source_.SqsEventSource(generate_recommendations_queue)
         )
         recommendations_table.grant_read_write_data(
             generate_recommendations_function
@@ -188,7 +234,7 @@ class CloudRecommendationStack(Stack):
             }
         )
         get_recommendations_resource = api_gateway.root.add_resource(
-            "recommendations"
+            "getRecommendations"
         )
         get_recommendations_resource.add_method(
             "GET",
