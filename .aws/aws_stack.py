@@ -18,9 +18,56 @@ class CloudRecommendationStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs):
         super().__init__(scope, construct_id, **kwargs)
 
-        # ==== Data sync / scraper ====
+        # Create core infrastructure
+        users_table, users_params_table, shows_table, shows_params_table, recommendations_table = self.create_tables()
+        api_gateway_role, api_gateway = self.create_api()
+        sync_data_queue, generate_recommendations_queue = self.create_sqs(
+            api_gateway_role
+        )
 
-        # DynamoDB tables
+        # Create data sync
+        self.create_data_sync(
+            api_gateway_role,
+            api_gateway,
+            sync_data_queue,
+            users_table,
+            users_params_table,
+            shows_table,
+            shows_params_table
+        )
+
+        # Create model
+        inference_model_function = self.create_inference_model()
+        train_model_function = self.create_training_model()
+
+        # Generate recommendations
+        self.create_generate_recommendations(
+            api_gateway_role,
+            api_gateway,
+            generate_recommendations_queue,
+            recommendations_table,
+            users_params_table,
+            shows_table,
+            shows_params_table,
+            inference_model_function
+        )
+
+        # Get recommendations
+        self.create_get_recommendations(
+            api_gateway,
+            recommendations_table
+        )
+
+        # Train recommendation model
+        self.create_train_recommendation_model(
+            users_table,
+            users_params_table,
+            shows_params_table,
+            train_model_function
+        )
+
+    # Create dynamodb tables
+    def create_tables(self):
         users_table = dynamodb_.Table(
             self,
             id="usersTable",
@@ -30,6 +77,7 @@ class CloudRecommendationStack(Stack):
                 type=dynamodb_.AttributeType.STRING
             )
         )
+
         users_params_table = dynamodb_.Table(
             self,
             id="usersParamsTable",
@@ -39,6 +87,7 @@ class CloudRecommendationStack(Stack):
                 type=dynamodb_.AttributeType.STRING
             )
         )
+
         shows_table = dynamodb_.Table(
             self,
             id="showsTable",
@@ -48,6 +97,7 @@ class CloudRecommendationStack(Stack):
                 type=dynamodb_.AttributeType.STRING
             )
         )
+
         shows_params_table = dynamodb_.Table(
             self,
             id="showsParamsTable",
@@ -58,13 +108,31 @@ class CloudRecommendationStack(Stack):
             )
         )
 
-        # Integrate sqs directly with API gateway
+        recommendations_table = dynamodb_.Table(
+            self,
+            id="recommendationsTable",
+            table_name="recommendationsTable",
+            partition_key=dynamodb_.Attribute(
+                name="userId",
+                type=dynamodb_.AttributeType.STRING
+            )
+        )
+
+        return users_table, users_params_table, shows_table, shows_params_table, recommendations_table
+
+    # Create API gateway
+    def create_api(self):
         api_gateway_role = iam_.Role(
             self,
             id="sqsAPIGatewayRole",
             assumed_by=iam_.ServicePrincipal("apigateway.amazonaws.com")
         )
+        api_gateway = apigateway_.RestApi(self, "recommendationApi")
 
+        return api_gateway_role, api_gateway
+
+    # Create queues
+    def create_sqs(self, api_gateway_role: iam_.Role):
         sync_data_queue = sqs_.Queue(
             self,
             "syncDataQueue",
@@ -72,10 +140,26 @@ class CloudRecommendationStack(Stack):
         )
         sync_data_queue.grant_send_messages(api_gateway_role)
 
-        # API gateway SQS integration
-        api_gateway = apigateway_.RestApi(self, "recommendationApi")
+        generate_recommendations_queue = sqs_.Queue(
+            self,
+            "generateRecommendationsQueue",
+            visibility_timeout=Duration.minutes(10)
+        )
+        generate_recommendations_queue.grant_send_messages(api_gateway_role)
 
-        sync_data_resource = api_gateway.root.add_resource("syncData")
+        return sync_data_queue, generate_recommendations_queue
+
+    # Create data sync component
+    def create_data_sync(
+        self,
+        api_gateway_role: iam_.Role,
+        api_gateway: apigateway_.RestApi,
+        sync_data_queue: sqs_.Queue,
+        users_table: dynamodb_.Table,
+        users_params_table: dynamodb_.Table,
+        shows_table: dynamodb_.Table,
+        shows_params_table: dynamodb_.Table
+    ):
         api_gateway_sync_data_sqs_integration = apigateway_.AwsIntegration(
             service="sqs",
             path=f"{os.getenv('CDK_DEFAULT_ACCOUNT')}/{sync_data_queue.queue_name}",
@@ -95,6 +179,8 @@ class CloudRecommendationStack(Stack):
                 ]
             )
         )
+
+        sync_data_resource = api_gateway.root.add_resource("syncData")
         sync_data_resource.add_method(
             "POST",
             api_gateway_sync_data_sqs_integration,
@@ -105,7 +191,6 @@ class CloudRecommendationStack(Stack):
             ]
         )
 
-        # Lambda scraper integrated with SQS
         scraper_function = lambda_.DockerImageFunction(
             self,
             "scraperFunction",
@@ -117,12 +202,14 @@ class CloudRecommendationStack(Stack):
         scraper_function.add_event_source(
             event_source_.SqsEventSource(sync_data_queue)
         )
+
         users_table.grant_read_write_data(scraper_function)
         users_params_table.grant_read_write_data(scraper_function)
         shows_table.grant_read_write_data(scraper_function)
         shows_params_table.grant_read_write_data(scraper_function)
 
-        # ==== Create and deploy model - NOTE model should be deployed with SageMaker and has only been deployed with Lambda for testing ====
+    # Create the inference model NOTE should be deployed with SageMaker
+    def create_inference_model(self):
         inference_model_function = lambda_.DockerImageFunction(
             self,
             "inferenceModelFunction",
@@ -132,6 +219,11 @@ class CloudRecommendationStack(Stack):
             ),
             timeout=Duration.minutes(10)
         )
+
+        return inference_model_function
+
+    # Create the training model NOTE should be deployed with SageMaker
+    def create_training_model(self):
         train_model_function = lambda_.DockerImageFunction(
             self,
             "trainModelFunction",
@@ -142,28 +234,23 @@ class CloudRecommendationStack(Stack):
             timeout=Duration.minutes(10)
         )
 
-        # ==== Request recommendations ====
-        recommendations_table = dynamodb_.Table(
-            self,
-            id="recommendationsTable",
-            table_name="recommendationsTable",
-            partition_key=dynamodb_.Attribute(
-                name="userId",
-                type=dynamodb_.AttributeType.STRING
-            )
-        )
+        return train_model_function
 
-        # Integrate SQS with API gateway
-        generate_recommendations_queue = sqs_.Queue(
-            self,
-            "generateRecommendationsQueue",
-            visibility_timeout=Duration.minutes(10)
-        )
-        generate_recommendations_queue.grant_send_messages(api_gateway_role)
-
+    # Generate recommendations component
+    def create_generate_recommendations(
+        self,
+        api_gateway_role: iam_.Role,
+        api_gateway: apigateway_.RestApi,
+        generate_recommendations_queue: sqs_.Queue,
+        recommendations_table: dynamodb_.Table,
+        users_params_table: dynamodb_.Table,
+        shows_table: dynamodb_.Table,
+        shows_params_table: dynamodb_.Table,
+        inference_model_function: lambda_.Function
+    ):
         generate_recommendations_resource = api_gateway.root.add_resource(
-            "generateRecommendations"
-        )
+            "generateRecommendations")
+
         api_gateway_generate_recommendations_sqs_integration = apigateway_.AwsIntegration(
             service="sqs",
             path=f"{os.getenv('CDK_DEFAULT_ACCOUNT')}/{generate_recommendations_queue.queue_name}",
@@ -204,9 +291,11 @@ class CloudRecommendationStack(Stack):
             ),
             timeout=Duration.minutes(10)
         )
+
         generate_recommendations_function.add_event_source(
             event_source_.SqsEventSource(generate_recommendations_queue)
         )
+
         recommendations_table.grant_read_write_data(
             generate_recommendations_function
         )
@@ -219,11 +308,17 @@ class CloudRecommendationStack(Stack):
         shows_params_table.grant_read_data(
             generate_recommendations_function
         )
+
         inference_model_function.grant_invoke(
             generate_recommendations_function
         )
 
-        # ==== Get recommendations ====
+    # Create get recommendations component
+    def create_get_recommendations(
+        self,
+        api_gateway: apigateway_.RestApi,
+        recommendations_table: dynamodb_.Table,
+    ):
         get_recommendations_function = lambda_.DockerImageFunction(
             self,
             "getRecommendationsFunction",
@@ -247,9 +342,14 @@ class CloudRecommendationStack(Stack):
             get_recommendations_function_integration
         )
 
-        # ==== Train recommendation model ====
-
-        # Setup lambda trainer
+    # Create train recommendation model component
+    def create_train_recommendation_model(
+        self,
+        users_table: dynamodb_.Table,
+        users_params_table: dynamodb_.Table,
+        shows_params_table: dynamodb_.Table,
+        train_model_function: lambda_.Function,
+    ):
         train_recommendations_function = lambda_.DockerImageFunction(
             self,
             "trainRecommendationsFunction",
@@ -272,7 +372,7 @@ class CloudRecommendationStack(Stack):
         )
 
         # Setup recurring event bridge
-        schedule_train_event_rule = events.Rule(
+        events.Rule(
             self,
             "scheduleTrain",
             rule_name="scheduleTrain",
@@ -281,7 +381,3 @@ class CloudRecommendationStack(Stack):
             ],
             schedule=events.Schedule.rate(Duration.hours(2))
         )
-
-    # Create dynamodb tables
-    def create_tables():
-        pass
