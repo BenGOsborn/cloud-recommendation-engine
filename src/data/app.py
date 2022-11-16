@@ -5,9 +5,6 @@ import utils
 import random
 import os
 
-# NOTE initial params CANNOT be set to zero otherwise no gradients can be calculated
-WEIGHTS_SIZE = 12
-
 
 def lambda_handler(event, context):
     client = boto3.resource("dynamodb")
@@ -18,12 +15,18 @@ def lambda_handler(event, context):
     shows_table = client.Table(os.getenv("showsTable"))
     shows_params_table = client.Table(os.getenv("showsParamsTable"))
 
+    # **** We also need to consider the case of duplicates with this one
+
+    users = []
+    shows = []
+
     for record in event["Records"]:
         body = json.loads(record["body"])
         user = body["user"]
 
         # Get scraped user data
-        shows = utils.scrape(user)
+        users.append(user)
+        shows.append(utils.scrape(user))
 
         # Store a list of reviewed shows from the user
         user_reviewed_shows = json.dumps([
