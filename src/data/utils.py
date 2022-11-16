@@ -89,7 +89,7 @@ def create_show_data(shows: List, shows_table: any):
         for show in shows:
             writer.put_item(
                 Item={
-                    "showId": show["anime_id"],
+                    "showId": str(show["anime_id"]),
                     "animeTitle": show["anime_title"],
                     "animeTitleEng": show["anime_title_eng"],
                 }
@@ -104,7 +104,7 @@ def create_show_params(shows: List[str], shows_params_table: any):
 
             shows_params_table.put_item(
                 Item={
-                    "showId": show["anime_id"],
+                    "showId": str(show["anime_id"]),
                     "weights": weights,
                     "biases": bias
                 },
