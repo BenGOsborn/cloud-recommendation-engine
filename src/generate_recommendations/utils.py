@@ -34,8 +34,8 @@ def fetch_data(
     )
     batch = batch_res["Responses"]
 
-    user_params = batch["usersParamsTable"]
-    shows = batch["showsTable"]
+    user_params = batch[users_params_table_name]
+    shows = batch[shows_table_name]
 
     return shows, show_params, user_params
 

@@ -40,6 +40,21 @@ def get_top_shows(users: List["str"]):
 
 # Fetch the user and show params
 def fetch_data(users: List, shows_freq_list: List, db_client: any, users_params_table_name: str, shows_params_table_name: str):
+    print(
+        {
+            users_params_table_name: {
+                "Keys": [
+                    {"userId": user["userId"]} for user in users
+                ]
+            },
+            shows_params_table_name: {
+                "Keys": [
+                    {"showId": show[0]} for show in shows_freq_list
+                ]
+            }
+        }
+    )
+
     batch_res = db_client.batch_get_item(
         RequestItems={
             users_params_table_name: {
@@ -56,8 +71,8 @@ def fetch_data(users: List, shows_freq_list: List, db_client: any, users_params_
     )
     batch = batch_res["Responses"]
 
-    user_params = batch["usersParamsTable"]
-    show_params = batch["showsParamsTable"]
+    user_params = batch[users_params_table_name]
+    show_params = batch[shows_params_table_name]
 
     return user_params, show_params
 
