@@ -1,6 +1,7 @@
 from typing import List
 import json
 
+
 BATCH_SIZE = 50
 
 
