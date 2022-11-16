@@ -270,5 +270,5 @@ def create_train_recommendation_model(
         targets=[
             targets.LambdaFunction(handler=train_recommendations_function)
         ],
-        schedule=events.Schedule.rate(Duration.hours(2))
+        schedule=events.Schedule.rate(Duration.hours(6))
     )
