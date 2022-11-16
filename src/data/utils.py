@@ -33,26 +33,7 @@ def scrape(user: str):
     tag = soup.find("table", {"class": "list-table"})
     items = json.loads(tag["data-items"])
 
-    # Extract required traits from the html
-    out = []
-
-    traits_to_extract = [
-        "anime_id",
-        "anime_title",
-        "anime_title_eng",
-        "score",
-        "created_at"
-    ]
-
-    for row in items:
-        traits = extract_traits(row, traits_to_extract)
-
-        if traits is None:
-            continue
-
-        out.append(traits)
-
-    return out
+    return items
 
 
 # Generate random weights and biases
@@ -83,10 +64,9 @@ def create_user_data(users: List[str], shows: List, users_table: any):
             )
 
 
-# Create the user params
+# Create the user params if they dont exist
 def create_user_params(users: List[str], users_params_table: any):
     for user in users:
-        # Create weights and biases for users if they dont exist
         try:
             weights, bias = create_params(WEIGHT_SIZE)
 
@@ -103,7 +83,20 @@ def create_user_params(users: List[str], users_params_table: any):
                 raise
 
 
-# Create the show params
+# Insert the shows data (assumed that there are no duplicates)
+def create_show_data(shows: List, shows_table: any):
+    with shows_table.batch_writer() as writer:
+        for show in shows:
+            writer.put_item(
+                Item={
+                    "showId": show["anime_id"],
+                    "animeTitle": show["anime_title"],
+                    "animeTitleEng": show["anime_title_eng"],
+                }
+            )
+
+
+# Create the show params if they dont exist
 def create_show_params(shows: List[str], shows_params_table: any):
     for show in shows:
         try:
