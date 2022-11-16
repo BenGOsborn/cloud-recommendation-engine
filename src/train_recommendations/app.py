@@ -1,65 +1,40 @@
 import boto3
 import json
-
-
-BATCH_SIZE = 50
+import os
+import utils
 
 
 def lambda_handler(event, context):
     db_client = boto3.resource("dynamodb")
     lambda_client = boto3.client("lambda")
 
-    users_table = db_client.Table("usersTable")
+    # Declare tables and resource names
+    users_table = db_client.Table(os.getenv("usersTable"))
 
-    users_params_table = db_client.Table("usersParamsTable")
-    shows_params_table = db_client.Table("showsParamsTable")
+    users_params_table = db_client.Table(os.getenv("usersParamsTable"))
+    shows_params_table = db_client.Table(os.getenv("showsParamsTable"))
+
+    users_params_table_name = os.getenv("usersParamsTable")
+    shows_params_table_name = os.getenv("showsParamsTable")
+
+    train_model_function_name = os.getenv("trainModelFunction")
 
     # Get a random sample of users
-    users_res = users_table.scan(
-        Limit=BATCH_SIZE
+    users = utils.sample_users(users_table)
+
+    # Get show frequencies and a list of top shows
+    shows_freq, shows_freq_list = utils.get_top_shows(users)
+
+    # Get the user and show paramsk
+    user_params, show_params = utils.fetch_data(
+        users,
+        shows_freq_list,
+        db_client,
+        users_params_table_name,
+        shows_params_table_name
     )
-    users = users_res["Items"] if "Items" in users_res else []
 
-    # Keep a record of the frequency a show appears
-    show_freq = {}
-
-    for i, user in enumerate(users):
-        shows_list = json.loads(user["shows"])
-
-        for show in shows_list:
-            show_id = show["showId"]
-
-            if show_id not in show_freq:
-                show_freq[show_id] = {}
-
-            show_freq[show_id][i] = float(show["score"])
-
-    # Sort the frequencies of the shows and get the highest amount
-    shows_freq_list = sorted(
-        [(k, len(v)) for k, v in show_freq.items()],
-        key=lambda x: x[0],
-        reverse=True
-    )[:BATCH_SIZE]
-
-    # Get the params from the given users and shows
-    batch_res = db_client.batch_get_item(
-        RequestItems={
-            "usersParamsTable": {
-                "Keys": [
-                    {"userId": user["userId"]} for user in users
-                ]
-            },
-            "showsParamsTable": {
-                "Keys": [
-                    {"showId": show[0]} for show in shows_freq_list
-                ]
-            }
-        }
-    )
-    batch = batch_res["Responses"]
-
-    user_params = batch["usersParamsTable"]
-    show_params = batch["showsParamsTable"]
+    # get the trained params
 
     # Get the params
     weights1 = [json.loads(params["weights"]) for params in user_params]
@@ -113,21 +88,23 @@ def lambda_handler(event, context):
     new_weights2 = new_params["weights2"]
     new_biases2 = new_params["biases2"]
 
-    # Update the params
-    for i in range(len(user_params)):
-        users_params_table.put_item(
-            Item={
-                "userId": users[i]["userId"],
-                "weights": json.dumps(new_weights1[i]),
-                "biases": str(new_biases1[i]),
-            })
+    # Update the params with the new params
+    with users_params_table.batch_writer() as writer:
+        for i in range(len(user_params)):
+            writer.put_item(
+                Item={
+                    "userId": users[i]["userId"],
+                    "weights": json.dumps(new_weights1[i]),
+                    "biases": str(new_biases1[i]),
+                })
 
-    for i in range(len(show_params)):
-        shows_params_table.put_item(
-            Item={
-                "showId": shows_freq_list[i][0],
-                "weights": json.dumps(new_weights2[i]),
-                "biases": str(new_biases2[i]),
-                "cluster": show_params[i]["cluster"],
-            }
-        )
+    with shows_params_table() as writer:
+        for i in range(len(show_params)):
+            writer.put_item(
+                Item={
+                    "showId": shows_freq_list[i][0],
+                    "weights": json.dumps(new_weights2[i]),
+                    "biases": str(new_biases2[i]),
+                    "cluster": show_params[i]["cluster"],
+                }
+            )
