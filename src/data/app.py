@@ -12,6 +12,7 @@ WEIGHTS_SIZE = 12
 def lambda_handler(event, context):
     client = boto3.resource("dynamodb")
 
+    # Initialize tables
     users_table = client.Table(os.getenv("usersTable"))
     users_params_table = client.Table(os.getenv("usersParamsTable"))
     shows_table = client.Table(os.getenv("showsTable"))
