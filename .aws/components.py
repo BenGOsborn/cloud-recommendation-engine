@@ -60,7 +60,13 @@ def create_data_sync(
         code=lambda_.DockerImageCode.from_image_asset(
             os.path.join(os.getcwd(), "..", "src", "data")
         ),
-        timeout=Duration.minutes(10)
+        timeout=Duration.minutes(10),
+        environment={
+            "usersTable": users_table.table_name,
+            "usersParamsTable": users_params_table.table_name,
+            "showsTable": shows_table.table_name,
+            "showsParamsTable": shows_params_table.table_name,
+        }
     )
     scraper_function.add_event_source(
         event_source_.SqsEventSource(sync_data_queue)
@@ -115,7 +121,8 @@ def create_generate_recommendations(
     inference_model_function: lambda_.Function
 ):
     generate_recommendations_resource = api_gateway.root.add_resource(
-        "generateRecommendations")
+        "generateRecommendations"
+    )
 
     api_gateway_generate_recommendations_sqs_integration = apigateway_.AwsIntegration(
         service="sqs",
@@ -155,7 +162,14 @@ def create_generate_recommendations(
                 os.getcwd(), "..", "src", "generate_recommendations"
             )
         ),
-        timeout=Duration.minutes(10)
+        timeout=Duration.minutes(10),
+        environment={
+            "showsParamsTable": shows_params_table.table_name,
+            "recommendationsTable": recommendations_table.table_name,
+            "usersParamsTable": users_params_table.table_name,
+            "showsTable": shows_table.table_name,
+            "inferenceModelFunction": inference_model_function.function_name
+        }
     )
 
     generate_recommendations_function.add_event_source(
@@ -192,7 +206,10 @@ def create_get_recommendations(
         code=lambda_.DockerImageCode.from_image_asset(
             os.path.join(os.getcwd(), "..", "src", "get_recommendations")
         ),
-        timeout=Duration.seconds(10)
+        timeout=Duration.seconds(10),
+        environment={
+            "recommendationsTable": recommendations_table.table_name
+        }
     )
     recommendations_table.grant_read_data(get_recommendations_function)
     get_recommendations_function_integration = apigateway_.LambdaIntegration(
@@ -224,7 +241,13 @@ def create_train_recommendation_model(
         code=lambda_.DockerImageCode.from_image_asset(
             os.path.join(os.getcwd(), "..", "src", "train_recommendations")
         ),
-        timeout=Duration.minutes(10)
+        timeout=Duration.minutes(10),
+        environment={
+            "usersTable": users_table.table_name,
+            "usersParamsTable": users_params_table.table_name,
+            "showsParamsTable": shows_params_table.table_name,
+            "trainModelFunction": train_model_function.function_name
+        }
     )
     users_table.grant_read_data(
         train_recommendations_function

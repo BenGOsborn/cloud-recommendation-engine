@@ -3,6 +3,7 @@ import botocore
 import json
 import utils
 import random
+import os
 
 # NOTE initial params CANNOT be set to zero otherwise no gradients can be calculated
 WEIGHTS_SIZE = 12
@@ -11,10 +12,10 @@ WEIGHTS_SIZE = 12
 def lambda_handler(event, context):
     client = boto3.resource("dynamodb")
 
-    users_table = client.Table("usersTable")
-    users_params_table = client.Table("usersParamsTable")
-    shows_table = client.Table("showsTable")
-    shows_params_table = client.Table("showsParamsTable")
+    users_table = client.Table(os.getenv("usersTable"))
+    users_params_table = client.Table(os.getenv("usersParamsTable"))
+    shows_table = client.Table(os.getenv("showsTable"))
+    shows_params_table = client.Table(os.getenv("showsParamsTable"))
 
     for record in event["Records"]:
         body = json.loads(record["body"])
