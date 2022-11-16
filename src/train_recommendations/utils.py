@@ -40,21 +40,6 @@ def get_top_shows(users: List["str"]):
 
 # Fetch the user and show params
 def fetch_data(users: List, shows_freq_list: List, db_client: any, users_params_table_name: str, shows_params_table_name: str):
-    print(
-        {
-            users_params_table_name: {
-                "Keys": [
-                    {"userId": user["userId"]} for user in users
-                ]
-            },
-            shows_params_table_name: {
-                "Keys": [
-                    {"showId": show[0]} for show in shows_freq_list
-                ]
-            }
-        }
-    )
-
     batch_res = db_client.batch_get_item(
         RequestItems={
             users_params_table_name: {
@@ -64,7 +49,7 @@ def fetch_data(users: List, shows_freq_list: List, db_client: any, users_params_
             },
             shows_params_table_name: {
                 "Keys": [
-                    {"showId": show[0]} for show in shows_freq_list
+                    {"showId": str(show[0])} for show in shows_freq_list
                 ]
             }
         }
@@ -161,7 +146,7 @@ def save_params(
                     "biases": str(biases1[i]),
                 })
 
-    with shows_params_table() as writer:
+    with shows_params_table.batch_writer() as writer:
         for i in range(len(weights2)):
             writer.put_item(
                 Item={
