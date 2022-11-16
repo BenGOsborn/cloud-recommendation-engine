@@ -49,7 +49,7 @@ def fetch_data(users: List, shows_freq_list: List, db_client: any, users_params_
             },
             shows_params_table_name: {
                 "Keys": [
-                    {"showId": str(show[0])} for show in shows_freq_list
+                    {"showId": show[0]} for show in shows_freq_list
                 ]
             }
         }

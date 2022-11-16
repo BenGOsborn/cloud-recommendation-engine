@@ -9,19 +9,6 @@ BASE_URL = "https://myanimelist.net/animelist"
 WEIGHT_SIZE = 12
 
 
-# Extract the specified traits from the data
-def extract_traits(data: Dict[str, str], traits: List[str]):
-    out = {}
-
-    for trait in traits:
-        if trait in data:
-            out[trait] = str(data[trait])
-        else:
-            return None
-
-    return out
-
-
 # Scrape list of rated shows from user profile
 def scrape(user: str):
     # Get the raw content
@@ -32,6 +19,10 @@ def scrape(user: str):
 
     tag = soup.find("table", {"class": "list-table"})
     items = json.loads(tag["data-items"])
+
+    for item in items:
+        for key in item.keys():
+            item[key] = str(item[key])
 
     return items
 
@@ -89,7 +80,7 @@ def create_show_data(shows: List, shows_table: any):
         for show in shows:
             writer.put_item(
                 Item={
-                    "showId": str(show["anime_id"]),
+                    "showId": show["anime_id"],
                     "animeTitle": show["anime_title"],
                     "animeTitleEng": show["anime_title_eng"],
                 }
@@ -104,7 +95,7 @@ def create_show_params(shows: List[str], shows_params_table: any):
 
             shows_params_table.put_item(
                 Item={
-                    "showId": str(show["anime_id"]),
+                    "showId": show["anime_id"],
                     "weights": weights,
                     "biases": bias
                 },
