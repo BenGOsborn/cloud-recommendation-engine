@@ -38,8 +38,8 @@ def scrape(user: str):
 
 # Generate random weights and biases
 def create_params(weight_size: int):
-    weights = json.dumps([2 * random.choice() - 1 for _ in range(weight_size)])
-    bias = str(2 * random.choice() - 1)
+    weights = json.dumps([2 * random.random() - 1 for _ in range(weight_size)])
+    bias = str(2 * random.random() - 1)
 
     return weights, bias
 
